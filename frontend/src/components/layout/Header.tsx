@@ -18,7 +18,9 @@ import {
   Truck,
   CheckCircle,
   Clock,
-  Sparkles
+  Sparkles,
+  LogIn,
+  UserPlus
 } from 'lucide-react';
 
 export default function Header() {
@@ -296,15 +298,9 @@ export default function Header() {
             {/* Account Icon / Dropdown */}
             <div ref={accountRef} style={{ position: 'relative' }}>
               <button
-                onClick={() => {
-                  if (!isAuthenticated) {
-                    router.push('/login');
-                  } else {
-                    setAccountMenuOpen(!accountMenuOpen);
-                  }
-                }}
+                onClick={() => setAccountMenuOpen(!accountMenuOpen)}
                 style={{
-                  background: isAuthenticated ? '#EFE6DC' : 'transparent',
+                  background: isAuthenticated ? '#EFE6DC' : accountMenuOpen ? '#F3ECE2' : 'transparent',
                   color: '#20100A',
                   display: 'flex',
                   alignItems: 'center',
@@ -312,10 +308,10 @@ export default function Header() {
                   cursor: 'pointer',
                   padding: isAuthenticated ? '5px 12px' : '6px',
                   borderRadius: '9999px',
-                  border: isAuthenticated ? '1px solid #DFD2C4' : 'none',
-                  transition: 'background 0.15s ease'
+                  border: isAuthenticated ? '1px solid #DFD2C4' : accountMenuOpen ? '1px solid #E0D5C7' : 'none',
+                  transition: 'all 0.15s ease'
                 }}
-                title={isAuthenticated ? `Logged in as ${user?.name}` : 'Sign In / Register'}
+                title={isAuthenticated ? `Logged in as ${user?.name}` : 'Sign In / Sign Up'}
               >
                 <UserIcon size={19} strokeWidth={1.8} />
                 {isAuthenticated && (
@@ -325,164 +321,268 @@ export default function Header() {
                 )}
               </button>
 
-              {/* Account Dropdown Menu */}
-              {isAuthenticated && accountMenuOpen && (
+              {/* Account Dropdown Menu (both Authenticated & Guest Sign In / Sign Up) */}
+              {accountMenuOpen && (
                 <div 
                   style={{
                     position: 'absolute',
                     top: 'calc(100% + 8px)',
                     right: 0,
-                    width: '240px',
+                    width: isAuthenticated ? '240px' : '260px',
                     background: '#FFFFFF',
-                    borderRadius: '14px',
-                    boxShadow: '0 12px 36px rgba(0,0,0,0.15)',
-                    border: '1px solid #ECE4D8',
+                    borderRadius: '16px',
+                    boxShadow: '0 14px 40px rgba(32,16,10,0.18)',
+                    border: '1.5px solid #ECE4D8',
                     padding: '12px',
                     zIndex: 200,
                     animation: 'fadeIn 0.15s ease'
                   }}
                 >
-                  <div style={{ paddingBottom: '10px', marginBottom: '8px', borderBottom: '1px solid #F0E8DE' }}>
-                    <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#20100A' }}>{user?.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#736257' }}>{user?.email || user?.phone}</div>
-                    <span 
-                      style={{
-                        display: 'inline-block',
-                        background: '#E6F4EA',
-                        color: '#137333',
-                        fontSize: '0.68rem',
-                        fontWeight: 700,
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        marginTop: '6px'
-                      }}
-                    >
-                      Nuttryx Member ⭐
-                    </span>
-                  </div>
+                  {isAuthenticated ? (
+                    <>
+                      <div style={{ paddingBottom: '10px', marginBottom: '8px', borderBottom: '1px solid #F0E8DE' }}>
+                        <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#20100A' }}>{user?.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#736257' }}>{user?.email || user?.phone}</div>
+                        <span 
+                          style={{
+                            display: 'inline-block',
+                            background: '#E6F4EA',
+                            color: '#137333',
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            marginTop: '6px'
+                          }}
+                        >
+                          Nuttryx Member ⭐
+                        </span>
+                      </div>
 
-                  <a
-                    href="/account?tab=orders"
-                    onClick={() => setAccountMenuOpen(false)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '8px 10px',
-                      borderRadius: '8px',
-                      color: '#20100A',
-                      textDecoration: 'none',
-                      fontSize: '0.84rem',
-                      fontWeight: 600,
-                      transition: 'background 0.15s'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#FAF7F2')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    <PackageCheck size={16} color="#D9822B" />
-                    <span>My Orders 📦</span>
-                  </a>
+                      <a
+                        href="/account?tab=orders"
+                        onClick={() => setAccountMenuOpen(false)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          color: '#20100A',
+                          textDecoration: 'none',
+                          fontSize: '0.84rem',
+                          fontWeight: 600,
+                          transition: 'background 0.15s'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#FAF7F2')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        <PackageCheck size={16} color="#D9822B" />
+                        <span>My Orders 📦</span>
+                      </a>
 
-                  <a
-                    href="/account?tab=profile"
-                    onClick={() => setAccountMenuOpen(false)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '8px 10px',
-                      borderRadius: '8px',
-                      color: '#20100A',
-                      textDecoration: 'none',
-                      fontSize: '0.84rem',
-                      fontWeight: 600,
-                      transition: 'background 0.15s'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#FAF7F2')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    <UserIcon size={16} color="#3182CE" />
-                    <span>Profile & Address 👤</span>
-                  </a>
+                      <a
+                        href="/account?tab=profile"
+                        onClick={() => setAccountMenuOpen(false)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          color: '#20100A',
+                          textDecoration: 'none',
+                          fontSize: '0.84rem',
+                          fontWeight: 600,
+                          transition: 'background 0.15s'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#FAF7F2')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        <UserIcon size={16} color="#3182CE" />
+                        <span>Profile & Address 👤</span>
+                      </a>
 
-                  <a
-                    href="/admin"
-                    onClick={() => setAccountMenuOpen(false)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '8px 10px',
-                      borderRadius: '8px',
-                      color: '#20100A',
-                      textDecoration: 'none',
-                      fontSize: '0.84rem',
-                      fontWeight: 600,
-                      transition: 'background 0.15s'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#FAF7F2')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    <Shield size={16} color="#2D6A4F" />
-                    <span>Admin Dashboard</span>
-                  </a>
+                      <a
+                        href="/admin"
+                        onClick={() => setAccountMenuOpen(false)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          color: '#20100A',
+                          textDecoration: 'none',
+                          fontSize: '0.84rem',
+                          fontWeight: 600,
+                          transition: 'background 0.15s'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#FAF7F2')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        <Shield size={16} color="#2D6A4F" />
+                        <span>Admin Dashboard</span>
+                      </a>
 
-                  <button
-                    onClick={() => {
-                      setAccountMenuOpen(false);
-                      setIsTrackModalOpen(true);
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      width: '100%',
-                      padding: '8px 10px',
-                      borderRadius: '8px',
-                      background: 'transparent',
-                      border: 'none',
-                      color: '#20100A',
-                      fontSize: '0.84rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      textAlign: 'left'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#FAF7F2')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    <Truck size={16} color="#736257" />
-                    <span>Track Any Order</span>
-                  </button>
+                      <button
+                        onClick={() => {
+                          setAccountMenuOpen(false);
+                          setIsTrackModalOpen(true);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          width: '100%',
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#20100A',
+                          fontSize: '0.84rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          textAlign: 'left'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#FAF7F2')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        <Truck size={16} color="#736257" />
+                        <span>Track Any Order</span>
+                      </button>
 
-                  <div style={{ borderTop: '1px solid #F0E8DE', marginTop: '6px', paddingTop: '6px' }}>
-                    <button
-                      onClick={() => {
-                        logout();
-                        setAccountMenuOpen(false);
-                        triggerToast('Logged out successfully.');
-                      }}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        width: '100%',
-                        padding: '8px 10px',
-                        borderRadius: '8px',
-                        background: 'transparent',
-                        border: 'none',
-                        color: '#E53E3E',
-                        fontSize: '0.84rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        textAlign: 'left'
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = '#FFF5F5')}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                    >
-                      <LogOut size={15} />
-                      <span>Log Out</span>
-                    </button>
-                  </div>
+                      <div style={{ borderTop: '1px solid #F0E8DE', marginTop: '6px', paddingTop: '6px' }}>
+                        <button
+                          onClick={() => {
+                            logout();
+                            setAccountMenuOpen(false);
+                            triggerToast('Logged out successfully.');
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            width: '100%',
+                            padding: '8px 10px',
+                            borderRadius: '8px',
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#E53E3E',
+                            fontSize: '0.84rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            textAlign: 'left'
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = '#FFF5F5')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <LogOut size={15} />
+                          <span>Log Out</span>
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    /* Guest User: Sign In & Sign Up Options */
+                    <div>
+                      <div style={{ padding: '6px 8px 10px', borderBottom: '1px solid #F0E8DE', marginBottom: '10px' }}>
+                        <div style={{ fontWeight: 800, fontSize: '0.92rem', color: '#20100A' }}>
+                          Welcome to NUTTRYX
+                        </div>
+                        <div style={{ fontSize: '0.74rem', color: '#736257', marginTop: '2px', lineHeight: 1.4 }}>
+                          Login to manage orders & claim your free peanut butter sample
+                        </div>
+                      </div>
+
+                      {/* Sign In Link */}
+                      <a
+                        href="/login?mode=login"
+                        onClick={() => setAccountMenuOpen(false)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          background: 'linear-gradient(135deg, #20100A 0%, #381C12 100%)',
+                          color: '#FFFFFF',
+                          textDecoration: 'none',
+                          fontSize: '0.86rem',
+                          fontWeight: 700,
+                          marginBottom: '8px',
+                          transition: 'all 0.15s ease',
+                          boxShadow: '0 2px 8px rgba(32,16,10,0.18)'
+                        }}
+                      >
+                        <LogIn size={16} color="#D9822B" />
+                        <span>Sign In</span>
+                        <span style={{ marginLeft: 'auto', fontSize: '0.72rem', color: '#D9822B', fontWeight: 800 }}>→</span>
+                      </a>
+
+                      {/* Sign Up Link */}
+                      <a
+                        href="/login?mode=register"
+                        onClick={() => setAccountMenuOpen(false)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          background: '#FAF5EE',
+                          color: '#20100A',
+                          border: '1.5px solid #E8DDCE',
+                          textDecoration: 'none',
+                          fontSize: '0.86rem',
+                          fontWeight: 700,
+                          marginBottom: '10px',
+                          transition: 'all 0.15s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#F3ECE2';
+                          e.currentTarget.style.borderColor = '#D9822B';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#FAF5EE';
+                          e.currentTarget.style.borderColor = '#E8DDCE';
+                        }}
+                      >
+                        <UserPlus size={16} color="#D9822B" />
+                        <span>Sign Up / Register</span>
+                        <span style={{ marginLeft: 'auto', fontSize: '0.72rem', color: '#736257' }}>New</span>
+                      </a>
+
+                      {/* Track Order option */}
+                      <div style={{ borderTop: '1px solid #F0E8DE', paddingTop: '8px' }}>
+                        <button
+                          onClick={() => {
+                            setAccountMenuOpen(false);
+                            setIsTrackModalOpen(true);
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            width: '100%',
+                            padding: '8px 10px',
+                            borderRadius: '8px',
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#5C4A3E',
+                            fontSize: '0.82rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            textAlign: 'left'
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = '#FAF7F2')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <Truck size={15} color="#D9822B" />
+                          <span>Track Your Order</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -602,15 +702,26 @@ export default function Header() {
                   </button>
                 </>
               ) : (
-                <button
-                  onClick={() => {
-                    router.push('/login?mode=register');
-                    setMobileMenuOpen(false);
-                  }}
-                  style={{ background: 'none', border: 'none', textAlign: 'left', padding: '6px 0', color: '#D9822B', fontWeight: 700 }}
-                >
-                  🔐 Sign In / Create Account
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <button
+                    onClick={() => {
+                      router.push('/login?mode=login');
+                      setMobileMenuOpen(false);
+                    }}
+                    style={{ background: 'none', border: 'none', textAlign: 'left', padding: '6px 0', color: '#20100A', fontWeight: 800, fontSize: '0.92rem' }}
+                  >
+                    🔐 Sign In
+                  </button>
+                  <button
+                    onClick={() => {
+                      router.push('/login?mode=register');
+                      setMobileMenuOpen(false);
+                    }}
+                    style={{ background: 'none', border: 'none', textAlign: 'left', padding: '6px 0', color: '#D9822B', fontWeight: 800, fontSize: '0.92rem' }}
+                  >
+                    ✨ Sign Up / Create Account
+                  </button>
+                </div>
               )}
               <button 
                 onClick={() => { setIsTrackModalOpen(true); setMobileMenuOpen(false); }}
