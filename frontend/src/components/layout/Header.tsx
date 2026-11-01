@@ -616,11 +616,10 @@ export default function Header() {
                         <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: 'rgba(217, 130, 43, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <UserPlus size={16} color="#D9822B" />
                         </div>
-                        <div>
+                        <div style={{ flex: 1 }}>
                           <div style={{ fontSize: '0.88rem', fontWeight: 800, lineHeight: 1.2 }}>Create Account</div>
-                          <div style={{ fontSize: '0.7rem', color: '#736257', marginTop: '2px' }}>New to Nuttryx? Join free</div>
+                          <div style={{ fontSize: '0.7rem', color: '#736257', marginTop: '2px' }}>New to Nuttryx? Join today</div>
                         </div>
-                        <span style={{ marginLeft: 'auto', fontSize: '0.68rem', fontWeight: 800, color: '#03543F', background: '#DEF7EC', padding: '2px 6px', borderRadius: '4px' }}>Free</span>
                       </a>
 
                       {/* Helpful Utilities */}
@@ -680,7 +679,7 @@ export default function Header() {
                           onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                         >
                           <Gift size={15} color="#D9822B" />
-                          <span>Book Free 50g Sample</span>
+                          <span>Book 50g Sample</span>
                         </button>
                       </div>
                     </div>

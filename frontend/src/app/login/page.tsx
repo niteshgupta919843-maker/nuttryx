@@ -733,6 +733,31 @@ function LoginContent() {
             }
           </p>
 
+          {/* Sample Claim Prompt Banner */}
+          {redirectUrl.includes('sample') && (
+            <div
+              style={{
+                background: 'rgba(229, 131, 45, 0.15)',
+                border: '1.5px solid rgba(229, 131, 45, 0.45)',
+                borderRadius: '14px',
+                padding: '11px 14px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                textAlign: 'left'
+              }}
+            >
+              <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>🎁</span>
+              <div>
+                <div style={{ fontSize: '0.86rem', fontWeight: 800, color: '#FFFFFF' }}>Claim 50g Sample Pack</div>
+                <div style={{ fontSize: '0.74rem', color: '#D4C6BC', marginTop: '2px' }}>
+                  Please sign in or create an account to get your sample delivered.
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Alert Notifications */}
           {errorMsg && (
             <div 

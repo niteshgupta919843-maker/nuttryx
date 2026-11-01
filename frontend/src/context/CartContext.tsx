@@ -101,6 +101,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [wishlist, isLoaded]);
 
+  // Re-open sample modal automatically if returning from login redirect
+  useEffect(() => {
+    if (typeof window !== 'undefined' && user) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isSampleRedirect = urlParams.get('sample') === 'true' || sessionStorage.getItem('nuttryx_open_sample') === 'true';
+      if (isSampleRedirect) {
+        sessionStorage.removeItem('nuttryx_open_sample');
+        if (urlParams.has('sample')) {
+          urlParams.delete('sample');
+          const cleanSearch = urlParams.toString();
+          const cleanUrl = window.location.pathname + (cleanSearch ? `?${cleanSearch}` : '');
+          window.history.replaceState({}, '', cleanUrl);
+        }
+        setIsSampleModalOpen(true);
+      }
+    }
+  }, [user]);
+
   const triggerToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => {
@@ -225,7 +243,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setQuickViewProduct(null);
   };
 
-  const openSampleModal = () => setIsSampleModalOpen(true);
+  const openSampleModal = () => {
+    if (!user) {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('nuttryx_open_sample', 'true');
+        window.location.href = '/login?mode=login&redirect=' + encodeURIComponent('/?sample=true');
+      }
+      return;
+    }
+    setIsSampleModalOpen(true);
+  };
   const closeSampleModal = () => setIsSampleModalOpen(false);
 
   const openCheckout = () => {

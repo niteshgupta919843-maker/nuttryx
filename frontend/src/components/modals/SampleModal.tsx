@@ -22,6 +22,21 @@ export default function SampleModal() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Sync with logged in user profile
+  React.useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: prev.name || user.name || '',
+        phone: prev.phone || user.phone || '',
+        email: prev.email || user.email || '',
+        address: prev.address || user.address || '',
+        city: prev.city || user.city || '',
+        pincode: prev.pincode || user.pincode || ''
+      }));
+    }
+  }, [user]);
+
   if (!isSampleModalOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
