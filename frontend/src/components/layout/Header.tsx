@@ -20,7 +20,8 @@ import {
   Clock,
   Sparkles,
   LogIn,
-  UserPlus
+  UserPlus,
+  Gift
 } from 'lucide-react';
 
 export default function Header() {
@@ -70,15 +71,24 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close account dropdown on outside click
+  // Close account dropdown on outside click or Escape key
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
         setAccountMenuOpen(false);
       }
     };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setAccountMenuOpen(false);
+      }
+    };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const handleTrackSubmit = async (e: React.FormEvent) => {
@@ -298,22 +308,44 @@ export default function Header() {
             {/* Account Icon / Dropdown */}
             <div ref={accountRef} style={{ position: 'relative' }}>
               <button
+                type="button"
                 onClick={() => setAccountMenuOpen(!accountMenuOpen)}
                 style={{
+                  width: isAuthenticated ? 'auto' : '40px',
+                  height: '40px',
+                  borderRadius: isAuthenticated ? '9999px' : '50%',
                   background: isAuthenticated ? '#EFE6DC' : accountMenuOpen ? '#F3ECE2' : 'transparent',
                   color: '#20100A',
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: '6px',
                   cursor: 'pointer',
-                  padding: isAuthenticated ? '5px 12px' : '6px',
-                  borderRadius: '9999px',
-                  border: isAuthenticated ? '1px solid #DFD2C4' : accountMenuOpen ? '1px solid #E0D5C7' : 'none',
-                  transition: 'all 0.15s ease'
+                  padding: isAuthenticated ? '5px 14px' : '0',
+                  border: accountMenuOpen 
+                    ? '1.5px solid #D9822B' 
+                    : isAuthenticated 
+                      ? '1px solid #DFD2C4' 
+                      : '1.5px solid transparent',
+                  boxShadow: accountMenuOpen ? '0 2px 10px rgba(217, 130, 43, 0.2)' : 'none',
+                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isAuthenticated && !accountMenuOpen) {
+                    e.currentTarget.style.background = '#F6EFE6';
+                    e.currentTarget.style.borderColor = '#E8DDCE';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isAuthenticated && !accountMenuOpen) {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.borderColor = 'transparent';
+                  }
                 }}
                 title={isAuthenticated ? `Logged in as ${user?.name}` : 'Sign In / Sign Up'}
+                aria-expanded={accountMenuOpen}
               >
-                <UserIcon size={19} strokeWidth={1.8} />
+                <UserIcon size={20} strokeWidth={1.9} color={accountMenuOpen ? '#D9822B' : '#20100A'} />
                 {isAuthenticated && (
                   <span style={{ fontSize: '0.82rem', fontWeight: 700, maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {user?.name.split(' ')[0]}
@@ -326,22 +358,40 @@ export default function Header() {
                 <div 
                   style={{
                     position: 'absolute',
-                    top: 'calc(100% + 8px)',
-                    right: 0,
-                    width: isAuthenticated ? '240px' : '260px',
+                    top: 'calc(100% + 10px)',
+                    right: '-6px',
+                    width: isAuthenticated ? '240px' : '285px',
+                    maxWidth: 'calc(100vw - 24px)',
                     background: '#FFFFFF',
-                    borderRadius: '16px',
-                    boxShadow: '0 14px 40px rgba(32,16,10,0.18)',
+                    borderRadius: '18px',
+                    boxShadow: '0 18px 46px rgba(32,16,10,0.18), 0 3px 12px rgba(0,0,0,0.06)',
                     border: '1.5px solid #ECE4D8',
-                    padding: '12px',
+                    padding: '14px',
                     zIndex: 200,
-                    animation: 'fadeIn 0.15s ease'
+                    transformOrigin: 'top right',
+                    animation: 'accountDropdownSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
                   }}
                 >
+                  {/* Subtle Anchor Caret pointing up to the user icon */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '-6px',
+                      right: '18px',
+                      width: '12px',
+                      height: '12px',
+                      background: '#FFFFFF',
+                      borderLeft: '1.5px solid #ECE4D8',
+                      borderTop: '1.5px solid #ECE4D8',
+                      transform: 'rotate(45deg)',
+                      zIndex: 1
+                    }}
+                  />
+
                   {isAuthenticated ? (
                     <>
-                      <div style={{ paddingBottom: '10px', marginBottom: '8px', borderBottom: '1px solid #F0E8DE' }}>
-                        <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#20100A' }}>{user?.name}</div>
+                      <div style={{ paddingBottom: '10px', marginBottom: '8px', borderBottom: '1px solid #F0E8DE', position: 'relative', zIndex: 2 }}>
+                        <div style={{ fontWeight: 800, fontSize: '0.92rem', color: '#20100A' }}>{user?.name}</div>
                         <div style={{ fontSize: '0.75rem', color: '#736257' }}>{user?.email || user?.phone}</div>
                         <span 
                           style={{
@@ -483,78 +533,100 @@ export default function Header() {
                       </div>
                     </>
                   ) : (
-                    /* Guest User: Sign In & Sign Up Options */
-                    <div>
-                      <div style={{ padding: '6px 8px 10px', borderBottom: '1px solid #F0E8DE', marginBottom: '10px' }}>
-                        <div style={{ fontWeight: 800, fontSize: '0.92rem', color: '#20100A' }}>
-                          Welcome to NUTTRYX
-                        </div>
-                        <div style={{ fontSize: '0.74rem', color: '#736257', marginTop: '2px', lineHeight: 1.4 }}>
-                          Login to manage orders & claim your free peanut butter sample
+                    /* Guest User: Polished Sign In & Sign Up Options */
+                    <div style={{ position: 'relative', zIndex: 2 }}>
+                      <div style={{ padding: '4px 6px 12px', borderBottom: '1px solid #F0E8DE', marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '1.1rem' }}>🥜</span>
+                          <div>
+                            <div style={{ fontWeight: 800, fontSize: '0.94rem', color: '#20100A' }}>
+                              Welcome to NUTTRYX
+                            </div>
+                            <div style={{ fontSize: '0.74rem', color: '#736257', marginTop: '1px' }}>
+                              Pure Nutrition • Saurashtra Peanuts
+                            </div>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Sign In Link */}
+                      {/* Primary Action: Sign In */}
                       <a
                         href="/login?mode=login"
                         onClick={() => setAccountMenuOpen(false)}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '10px',
-                          padding: '10px 14px',
-                          borderRadius: '10px',
-                          background: 'linear-gradient(135deg, #20100A 0%, #381C12 100%)',
+                          gap: '12px',
+                          padding: '11px 14px',
+                          borderRadius: '12px',
+                          background: 'linear-gradient(135deg, #20100A 0%, #351B12 100%)',
                           color: '#FFFFFF',
                           textDecoration: 'none',
-                          fontSize: '0.86rem',
-                          fontWeight: 700,
                           marginBottom: '8px',
-                          transition: 'all 0.15s ease',
-                          boxShadow: '0 2px 8px rgba(32,16,10,0.18)'
+                          transition: 'all 0.2s ease',
+                          boxShadow: '0 3px 10px rgba(32,16,10,0.18)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'linear-gradient(135deg, #D9822B 0%, #B8671B 100%)';
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'linear-gradient(135deg, #20100A 0%, #351B12 100%)';
+                          e.currentTarget.style.transform = 'translateY(0)';
                         }}
                       >
-                        <LogIn size={16} color="#D9822B" />
-                        <span>Sign In</span>
-                        <span style={{ marginLeft: 'auto', fontSize: '0.72rem', color: '#D9822B', fontWeight: 800 }}>→</span>
+                        <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <LogIn size={16} color="#FFD199" />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.88rem', fontWeight: 800, lineHeight: 1.2 }}>Sign In</div>
+                          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.75)', marginTop: '2px' }}>Access your orders & cart</div>
+                        </div>
+                        <span style={{ marginLeft: 'auto', fontSize: '0.82rem', fontWeight: 800, color: '#FFD199' }}>→</span>
                       </a>
 
-                      {/* Sign Up Link */}
+                      {/* Secondary Action: Create Account */}
                       <a
                         href="/login?mode=register"
                         onClick={() => setAccountMenuOpen(false)}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '10px',
-                          padding: '10px 14px',
-                          borderRadius: '10px',
+                          gap: '12px',
+                          padding: '11px 14px',
+                          borderRadius: '12px',
                           background: '#FAF5EE',
                           color: '#20100A',
                           border: '1.5px solid #E8DDCE',
                           textDecoration: 'none',
-                          fontSize: '0.86rem',
-                          fontWeight: 700,
-                          marginBottom: '10px',
-                          transition: 'all 0.15s ease'
+                          marginBottom: '12px',
+                          transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.background = '#F3ECE2';
                           e.currentTarget.style.borderColor = '#D9822B';
+                          e.currentTarget.style.transform = 'translateY(-1px)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = '#FAF5EE';
                           e.currentTarget.style.borderColor = '#E8DDCE';
+                          e.currentTarget.style.transform = 'translateY(0)';
                         }}
                       >
-                        <UserPlus size={16} color="#D9822B" />
-                        <span>Sign Up / Register</span>
-                        <span style={{ marginLeft: 'auto', fontSize: '0.72rem', color: '#736257' }}>New</span>
+                        <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: 'rgba(217, 130, 43, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <UserPlus size={16} color="#D9822B" />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.88rem', fontWeight: 800, lineHeight: 1.2 }}>Create Account</div>
+                          <div style={{ fontSize: '0.7rem', color: '#736257', marginTop: '2px' }}>New to Nuttryx? Join free</div>
+                        </div>
+                        <span style={{ marginLeft: 'auto', fontSize: '0.68rem', fontWeight: 800, color: '#03543F', background: '#DEF7EC', padding: '2px 6px', borderRadius: '4px' }}>Free</span>
                       </a>
 
-                      {/* Track Order option */}
-                      <div style={{ borderTop: '1px solid #F0E8DE', paddingTop: '8px' }}>
+                      {/* Helpful Utilities */}
+                      <div style={{ borderTop: '1px solid #F0E8DE', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <button
+                          type="button"
                           onClick={() => {
                             setAccountMenuOpen(false);
                             setIsTrackModalOpen(true);
@@ -562,7 +634,7 @@ export default function Header() {
                           style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '8px',
+                            gap: '9px',
                             width: '100%',
                             padding: '8px 10px',
                             borderRadius: '8px',
@@ -572,13 +644,43 @@ export default function Header() {
                             fontSize: '0.82rem',
                             fontWeight: 600,
                             cursor: 'pointer',
-                            textAlign: 'left'
+                            textAlign: 'left',
+                            transition: 'background 0.15s ease'
                           }}
                           onMouseEnter={(e) => (e.currentTarget.style.background = '#FAF7F2')}
                           onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                         >
                           <Truck size={15} color="#D9822B" />
-                          <span>Track Your Order</span>
+                          <span>Track Your Existing Order</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAccountMenuOpen(false);
+                            openSampleModal();
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '9px',
+                            width: '100%',
+                            padding: '8px 10px',
+                            borderRadius: '8px',
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#5C4A3E',
+                            fontSize: '0.82rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            transition: 'background 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = '#FAF7F2')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <Gift size={15} color="#D9822B" />
+                          <span>Book Free 50g Sample</span>
                         </button>
                       </div>
                     </div>
@@ -966,6 +1068,16 @@ export default function Header() {
       )}
 
       <style jsx>{`
+        @keyframes accountDropdownSlide {
+          from {
+            opacity: 0;
+            transform: scale(0.95) translateY(-6px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
         @media (max-width: 900px) {
           .hide-tablet {
             display: none !important;
