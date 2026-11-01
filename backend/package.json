@@ -1,0 +1,41 @@
+{
+  "name": "nuttryx-backend",
+  "version": "1.0.0",
+  "description": "NUTTRYX Peanut Butter - Node Express API",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "keywords": [
+    "nuttryx",
+    "peanut-butter",
+    "express",
+    "api"
+  ],
+  "author": "NUTTRYX Foods",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "debug": "^4.4.3",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.11.4",
+    "nodemailer": "^10.3.1",
+    "nuttryx-backend": "file:",
+    "razorpay": "^2.9.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20.14.0",
+    "@types/nodemailer": "^8.0.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.5.0"
+  }
+}
