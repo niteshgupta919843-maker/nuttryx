@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { 
-  ShoppingBag, 
+  ShoppingCart, 
   Search, 
   User as UserIcon, 
   Menu, 
@@ -494,31 +494,32 @@ export default function Header() {
                 position: 'relative',
                 background: 'transparent',
                 border: 'none',
-                color: '#20100A',
+                color: '#3D2B20',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                padding: '4px'
+                padding: '4px 6px'
               }}
               title="View Cart"
             >
-              <ShoppingBag size={20} strokeWidth={1.8} />
+              <ShoppingCart size={21} strokeWidth={2.1} color="#3D2B20" />
               <span 
                 style={{
                   position: 'absolute',
                   top: '-4px',
                   right: '-6px',
-                  background: '#20100A',
+                  background: '#947528',
                   color: '#FFFFFF',
                   borderRadius: '50%',
-                  width: '17px',
-                  height: '17px',
-                  fontSize: '0.64rem',
+                  width: '18px',
+                  height: '18px',
+                  fontSize: '0.68rem',
                   fontWeight: 800,
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.18)'
                 }}
               >
                 {cartCount}

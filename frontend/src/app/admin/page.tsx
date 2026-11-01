@@ -45,7 +45,16 @@ import {
   Copy,
   ExternalLink,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  Loader2,
+  HelpCircle,
+  Award,
+  Heart,
+  Leaf,
+  Dumbbell,
+  CheckCircle2,
+  Star,
+  MessageSquareHeart
 } from 'lucide-react';
 import { PRODUCTS, Product } from '@/data/products';
 
@@ -158,6 +167,61 @@ const INITIAL_SAMPLES: MockSample[] = [
   { id: 'SMP-1040', name: 'Amit Joshi', phone: '+91 99887 76655', city: 'Jaipur', flavour: 'Crunchy Roasted 50g', date: 'Yesterday', status: 'Dispatched' },
 ];
 
+export interface MockFaq {
+  id: string;
+  _id?: string;
+  question: string;
+  answer: string;
+  category: string;
+  order: number;
+  isActive: boolean;
+}
+
+export interface MockCraftStep {
+  id: string;
+  num: string;
+  subtitle: string;
+  title: string;
+  desc: string;
+  icon: string;
+  order: number;
+  isActive?: boolean;
+}
+
+export interface MockLifestylePillar {
+  id: string;
+  icon: string;
+  title: string;
+  subtitle: string;
+  desc: string;
+  perk: string;
+  order?: number;
+  isActive?: boolean;
+}
+
+export interface MockBenefitRow {
+  id: string;
+  feature: string;
+  nuttryx: string;
+  regular: string;
+  nuttryxWins?: boolean;
+  order?: number;
+  isActive?: boolean;
+}
+
+export interface MockReview {
+  id: string;
+  name: string;
+  role: string;
+  rating: number;
+  date: string;
+  comment: string;
+  flavour: string;
+  isVerified?: boolean;
+  isActive?: boolean;
+  order?: number;
+}
+
 const ADMIN_SECRET = 'Nuttryx@Admin2026';
 
 export default function AdminDashboard() {
@@ -167,11 +231,97 @@ export default function AdminDashboard() {
   const [adminLoading, setAdminLoading] = useState(false);
   const [showPasscode, setShowPasscode] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'samples' | 'sliders' | 'ticker' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'samples' | 'sliders' | 'ticker' | 'faqs' | 'craft' | 'lifestyle' | 'benefit' | 'reviews' | 'settings'>('dashboard');
   const [productsList, setProductsList] = useState<Product[]>(PRODUCTS);
   const [ordersList, setOrdersList] = useState<MockOrder[]>(INITIAL_ORDERS);
   const [samplesList, setSamplesList] = useState<MockSample[]>(INITIAL_SAMPLES);
   const [slidesList, setSlidesList] = useState<MockSlide[]>(INITIAL_SLIDES_LIST);
+
+  // FAQs State
+  const [faqsList, setFaqsList] = useState<MockFaq[]>([]);
+  const [faqSearchQuery, setFaqSearchQuery] = useState('');
+  const [faqCategoryFilter, setFaqCategoryFilter] = useState('All');
+  const [isFaqModalOpen, setIsFaqModalOpen] = useState(false);
+  const [editingFaq, setEditingFaq] = useState<MockFaq | null>(null);
+  const [faqFormQuestion, setFaqFormQuestion] = useState('');
+  const [faqFormAnswer, setFaqFormAnswer] = useState('');
+  const [faqFormCategory, setFaqFormCategory] = useState('Purity & Quality');
+  const [faqFormOrder, setFaqFormOrder] = useState<number>(1);
+  const [faqFormIsActive, setFaqFormIsActive] = useState<boolean>(true);
+  const [isSavingFaq, setIsSavingFaq] = useState(false);
+  const [faqToDelete, setFaqToDelete] = useState<MockFaq | null>(null);
+
+  // Craft Steps State (Our Story)
+  const [craftBadge, setCraftBadge] = useState('Our Story • The Pure Craft');
+  const [craftHeading, setCraftHeading] = useState('From Gujarat Soil to Your Spoon');
+  const [craftDesc, setCraftDesc] = useState('No chemical emulsifiers, no hydrogenated palm oils, no shortcuts. Just honest Indian peanuts transformed into pure nutrition.');
+  const [craftSteps, setCraftSteps] = useState<MockCraftStep[]>([]);
+  const [isSavingCraftHeader, setIsSavingCraftHeader] = useState(false);
+  const [isCraftStepModalOpen, setIsCraftStepModalOpen] = useState(false);
+  const [editingCraftStep, setEditingCraftStep] = useState<MockCraftStep | null>(null);
+  const [stepFormNum, setStepFormNum] = useState('01');
+  const [stepFormSubtitle, setStepFormSubtitle] = useState('');
+  const [stepFormTitle, setStepFormTitle] = useState('');
+  const [stepFormDesc, setStepFormDesc] = useState('');
+  const [stepFormIcon, setStepFormIcon] = useState('Sparkles');
+  const [stepFormOrder, setStepFormOrder] = useState(1);
+  const [stepFormIsActive, setStepFormIsActive] = useState(true);
+  const [isSavingCraftStep, setIsSavingCraftStep] = useState(false);
+
+  // Lifestyle Audience & Pillars State
+  const [lifestyleBadge, setLifestyleBadge] = useState('Built For Every Lifestyle');
+  const [lifestyleHeading, setLifestyleHeading] = useState('Who Is NUTTRYX Crafted For?');
+  const [lifestyleDesc, setLifestyleDesc] = useState('From high-performance gym workouts to busy laptop desks and school lunchboxes, our pure peanut butter fuels your daily journey.');
+  const [lifestylePillars, setLifestylePillars] = useState<MockLifestylePillar[]>([]);
+  const [isSavingLifestyleHeader, setIsSavingLifestyleHeader] = useState(false);
+  const [isPillarModalOpen, setIsPillarModalOpen] = useState(false);
+  const [editingPillar, setEditingPillar] = useState<MockLifestylePillar | null>(null);
+  const [pillarFormIcon, setPillarFormIcon] = useState('Dumbbell');
+  const [pillarFormTitle, setPillarFormTitle] = useState('');
+  const [pillarFormSubtitle, setPillarFormSubtitle] = useState('');
+  const [pillarFormDesc, setPillarFormDesc] = useState('');
+  const [pillarFormPerk, setPillarFormPerk] = useState('');
+  const [pillarFormOrder, setPillarFormOrder] = useState(1);
+  const [pillarFormIsActive, setPillarFormIsActive] = useState(true);
+  const [isSavingPillar, setIsSavingPillar] = useState(false);
+
+  // Benefit & Comparison Section State
+  const [benefitBadge, setBenefitBadge] = useState('The Clean Label Revolution');
+  const [benefitHeading, setBenefitHeading] = useState('Why NUTTRYX Wins Hands Down');
+  const [benefitDesc, setBenefitDesc] = useState(
+    'We started NUTTRYX because Indian fitness enthusiasts and families deserve genuine, unadulterated peanut butter without toxic palm oil and excessive sugars.'
+  );
+  const [benefitFooterBanner, setBenefitFooterBanner] = useState(
+    'Certified under FSSAI regulations and tested in NABL accredited food testing laboratories.'
+  );
+  const [benefitFooterLinkText, setBenefitFooterLinkText] = useState('Try Pure Taste →');
+  const [benefitFooterLinkUrl, setBenefitFooterLinkUrl] = useState('#products');
+  const [benefitRows, setBenefitRows] = useState<MockBenefitRow[]>([]);
+  const [isSavingBenefitHeader, setIsSavingBenefitHeader] = useState(false);
+  const [isBenefitModalOpen, setIsBenefitModalOpen] = useState(false);
+  const [editingBenefitRow, setEditingBenefitRow] = useState<MockBenefitRow | null>(null);
+  const [benefitFormFeature, setBenefitFormFeature] = useState('');
+  const [benefitFormNuttryx, setBenefitFormNuttryx] = useState('');
+  const [benefitFormRegular, setBenefitFormRegular] = useState('');
+  const [benefitFormOrder, setBenefitFormOrder] = useState(1);
+  const [benefitFormIsActive, setBenefitFormIsActive] = useState(true);
+  const [isSavingBenefitRow, setIsSavingBenefitRow] = useState(false);
+
+  // Customer Reviews State
+  const [reviewsList, setReviewsList] = useState<MockReview[]>([]);
+  const [reviewSearchQuery, setReviewSearchQuery] = useState('');
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [editingReview, setEditingReview] = useState<MockReview | null>(null);
+  const [reviewFormName, setReviewFormName] = useState('');
+  const [reviewFormRole, setReviewFormRole] = useState('');
+  const [reviewFormRating, setReviewFormRating] = useState(5);
+  const [reviewFormFlavour, setReviewFormFlavour] = useState('Dark Chocolate Peanut Butter');
+  const [reviewFormComment, setReviewFormComment] = useState('');
+  const [reviewFormIsVerified, setReviewFormIsVerified] = useState(true);
+  const [reviewFormIsActive, setReviewFormIsActive] = useState(true);
+  const [isSavingReview, setIsSavingReview] = useState(false);
+  const [reviewToDelete, setReviewToDelete] = useState<MockReview | null>(null);
+
   const [tickerItems, setTickerItems] = useState<string[]>([
     '🔥 100% Slow Roasted Saurashtra Peanuts',
     '💪 30g Pure Plant Protein',
@@ -272,6 +422,9 @@ export default function AdminDashboard() {
   const [editProductPrice, setEditProductPrice] = useState(299);
   const [editProductCategory, setEditProductCategory] = useState<'all' | 'protein' | 'chocolate' | 'combos'>('protein');
   const [editProductWeight, setEditProductWeight] = useState('500g');
+  const [editProductImage, setEditProductImage] = useState<string>('/images/creamy-peanut-butter.jpg');
+  const [editImageInputMode, setEditImageInputMode] = useState<'upload' | 'url'>('upload');
+  const [editUploadFileName, setEditUploadFileName] = useState<string>('');
 
   // Delete confirmation modal state
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
@@ -498,6 +651,104 @@ export default function AdminDashboard() {
         // offline resilience
       }
 
+      // 7. Fetch FAQs
+      try {
+        let faqsRes = await fetch(`/api/faqs/admin?_t=${Date.now()}`, { cache: 'no-store' });
+        if (!faqsRes.ok) {
+          faqsRes = await fetch(`http://localhost:5000/api/faqs/admin?_t=${Date.now()}`, { cache: 'no-store' });
+        }
+        if (faqsRes.ok) {
+          const faqsJson = await faqsRes.json();
+          if (faqsJson.success && Array.isArray(faqsJson.data)) {
+            setFaqsList(faqsJson.data);
+          }
+        }
+      } catch {
+        // offline resilience
+      }
+
+      // 8. Fetch Craft Process Story
+      try {
+        let craftRes = await fetch(`/api/craft?_t=${Date.now()}`, { cache: 'no-store' });
+        if (!craftRes.ok) {
+          craftRes = await fetch(`http://localhost:5000/api/craft?_t=${Date.now()}`, { cache: 'no-store' });
+        }
+        if (craftRes.ok) {
+          const craftJson = await craftRes.json();
+          if (craftJson.success && craftJson.data) {
+            setCraftBadge(craftJson.data.badge || 'The Pure Craft');
+            setCraftHeading(craftJson.data.heading || 'From Gujarat Soil to Your Spoon');
+            setCraftDesc(craftJson.data.description || 'No chemical emulsifiers, no hydrogenated palm oils, no shortcuts. Just honest Indian peanuts transformed into pure nutrition.');
+            if (Array.isArray(craftJson.data.steps)) {
+              setCraftSteps(craftJson.data.steps);
+            }
+          }
+        }
+      } catch {
+        // offline resilience
+      }
+
+      // 9. Fetch Lifestyle Section
+      try {
+        let lifeRes = await fetch(`/api/lifestyle?_t=${Date.now()}`, { cache: 'no-store' });
+        if (!lifeRes.ok) {
+          lifeRes = await fetch(`http://localhost:5000/api/lifestyle?_t=${Date.now()}`, { cache: 'no-store' });
+        }
+        if (lifeRes.ok) {
+          const lifeJson = await lifeRes.json();
+          if (lifeJson.success && lifeJson.data) {
+            setLifestyleBadge(lifeJson.data.badge || 'Built For Every Lifestyle');
+            setLifestyleHeading(lifeJson.data.heading || 'Who Is NUTTRYX Crafted For?');
+            setLifestyleDesc(lifeJson.data.description || 'From high-performance gym workouts to busy laptop desks and school lunchboxes, our pure peanut butter fuels your daily journey.');
+            if (Array.isArray(lifeJson.data.pillars)) {
+              setLifestylePillars(lifeJson.data.pillars);
+            }
+          }
+        }
+      } catch {
+        // offline resilience
+      }
+
+      // 10. Fetch Benefit Section (Comparison Table)
+      try {
+        let benRes = await fetch(`/api/benefit?_t=${Date.now()}`, { cache: 'no-store' });
+        if (!benRes.ok) {
+          benRes = await fetch(`http://localhost:5000/api/benefit?_t=${Date.now()}`, { cache: 'no-store' });
+        }
+        if (benRes.ok) {
+          const benJson = await benRes.json();
+          if (benJson.success && benJson.data) {
+            setBenefitBadge(benJson.data.badge || 'The Clean Label Revolution');
+            setBenefitHeading(benJson.data.heading || 'Why NUTTRYX Wins Hands Down');
+            setBenefitDesc(benJson.data.description || 'We started NUTTRYX because Indian fitness enthusiasts and families deserve genuine, unadulterated peanut butter without toxic palm oil and excessive sugars.');
+            setBenefitFooterBanner(benJson.data.footerBanner || 'Certified under FSSAI regulations and tested in NABL accredited food testing laboratories.');
+            setBenefitFooterLinkText(benJson.data.footerLinkText || 'Try Pure Taste →');
+            setBenefitFooterLinkUrl(benJson.data.footerLinkUrl || '#products');
+            if (Array.isArray(benJson.data.rows)) {
+              setBenefitRows(benJson.data.rows);
+            }
+          }
+        }
+      } catch {
+        // offline resilience
+      }
+
+      // 11. Fetch Customer Reviews
+      try {
+        let revRes = await fetch(`/api/reviews?admin=true&_t=${Date.now()}`, { cache: 'no-store' });
+        if (!revRes.ok) {
+          revRes = await fetch(`http://localhost:5000/api/reviews?admin=true&_t=${Date.now()}`, { cache: 'no-store' });
+        }
+        if (revRes.ok) {
+          const revJson = await revRes.json();
+          if (revJson.success && Array.isArray(revJson.data)) {
+            setReviewsList(revJson.data);
+          }
+        }
+      } catch {
+        // offline resilience
+      }
+
       if (!silent) showToast('⚡ Live sync completed successfully!');
     } catch {
       setDbConnected(false);
@@ -562,6 +813,29 @@ export default function AdminDashboard() {
     setEditProductCategory(p.category);
     setEditProductPrice(p.sizes?.[0]?.price || 299);
     setEditProductWeight(p.sizes?.[0]?.weight || '500g');
+    setEditProductImage(p.image || '/images/creamy-peanut-butter.jpg');
+    setEditImageInputMode(p.image?.startsWith('http') ? 'url' : 'upload');
+    setEditUploadFileName('');
+  };
+
+  const handleEditProductImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Image size exceeds 5MB limit. Please choose a smaller image.');
+        return;
+      }
+      setEditUploadFileName(file.name);
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        const result = uploadEvent.target?.result as string;
+        if (result) {
+          setEditProductImage(result);
+          showToast(`✓ Image "${file.name}" loaded!`);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSaveEditProduct = async (e: React.FormEvent) => {
@@ -576,7 +850,8 @@ export default function AdminDashboard() {
       name: editProductName,
       subtitle: editProductSubtitle,
       category: editProductCategory,
-      sizes: updatedSizes
+      sizes: updatedSizes,
+      image: editProductImage
     };
 
     setProductsList(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...payload } : p));
@@ -1008,6 +1283,823 @@ export default function AdminDashboard() {
     }
   };
 
+  // ── FAQ Handlers ──
+  const handleOpenAddFaq = () => {
+    setEditingFaq(null);
+    setFaqFormQuestion('');
+    setFaqFormAnswer('');
+    setFaqFormCategory('Purity & Quality');
+    setFaqFormOrder(faqsList.length + 1);
+    setFaqFormIsActive(true);
+    setIsFaqModalOpen(true);
+  };
+
+  const handleOpenEditFaq = (faq: MockFaq) => {
+    setEditingFaq(faq);
+    setFaqFormQuestion(faq.question);
+    setFaqFormAnswer(faq.answer);
+    setFaqFormCategory(faq.category || 'General');
+    setFaqFormOrder(faq.order || 1);
+    setFaqFormIsActive(faq.isActive !== false);
+    setIsFaqModalOpen(true);
+  };
+
+  const handleSaveFaq = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!faqFormQuestion.trim() || !faqFormAnswer.trim()) {
+      showToast('❌ Question and Answer are both required.');
+      return;
+    }
+
+    setIsSavingFaq(true);
+    try {
+      const payload = {
+        question: faqFormQuestion.trim(),
+        answer: faqFormAnswer.trim(),
+        category: faqFormCategory.trim() || 'General',
+        order: Number(faqFormOrder) || 1,
+        isActive: faqFormIsActive
+      };
+
+      if (editingFaq) {
+        let res = await fetch(`/api/faqs/${editingFaq.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          res = await fetch(`http://localhost:5000/api/faqs/${editingFaq.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+        const data = await res.json();
+        if (data.success && data.data) {
+          setFaqsList(prev => prev.map(f => f.id === editingFaq.id ? data.data : f));
+          showToast('✅ FAQ updated successfully!');
+          setIsFaqModalOpen(false);
+        } else {
+          showToast(`❌ ${data.message || 'Failed to update FAQ'}`);
+        }
+      } else {
+        let res = await fetch('/api/faqs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          res = await fetch('http://localhost:5000/api/faqs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+        const data = await res.json();
+        if (data.success && data.data) {
+          setFaqsList(prev => [...prev, data.data]);
+          showToast('✅ FAQ added successfully!');
+          setIsFaqModalOpen(false);
+        } else {
+          showToast(`❌ ${data.message || 'Failed to create FAQ'}`);
+        }
+      }
+    } catch {
+      showToast('❌ Network error while saving FAQ.');
+    } finally {
+      setIsSavingFaq(false);
+    }
+  };
+
+  const handleDeleteFaq = async (id: string, questionTitle: string) => {
+    if (!window.confirm(`Are you sure you want to delete this FAQ?\n\n"${questionTitle}"`)) return;
+
+    try {
+      let res = await fetch(`/api/faqs/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        res = await fetch(`http://localhost:5000/api/faqs/${id}`, { method: 'DELETE' });
+      }
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setFaqsList(prev => prev.filter(f => f.id !== id));
+        showToast('🗑️ FAQ deleted successfully!');
+      } else {
+        showToast(`❌ ${data.message || 'Failed to delete FAQ'}`);
+      }
+    } catch {
+      showToast('❌ Network error while deleting FAQ.');
+    }
+  };
+
+  const handleToggleFaqStatus = async (faq: MockFaq) => {
+    try {
+      const nextStatus = !faq.isActive;
+      let res = await fetch(`/api/faqs/${faq.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: nextStatus })
+      });
+      if (!res.ok) {
+        res = await fetch(`http://localhost:5000/api/faqs/${faq.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive: nextStatus })
+        });
+      }
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setFaqsList(prev => prev.map(f => f.id === faq.id ? { ...f, isActive: nextStatus } : f));
+        showToast(`FAQ is now ${nextStatus ? 'Active' : 'Hidden'}`);
+      }
+    } catch {
+      showToast('❌ Could not toggle FAQ status');
+    }
+  };
+
+  const handleSaveCraftHeader = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingCraftHeader(true);
+    try {
+      const payload = {
+        badge: craftBadge.trim(),
+        heading: craftHeading.trim(),
+        description: craftDesc.trim()
+      };
+      let res = await fetch('/api/craft', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        res = await fetch('http://localhost:5000/api/craft', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+      const data = await res.json();
+      if (data.success) {
+        showToast('✅ Craft story header updated successfully!');
+      } else {
+        showToast(`❌ ${data.message || 'Failed to update header'}`);
+      }
+    } catch {
+      showToast('❌ Network error while saving craft header.');
+    } finally {
+      setIsSavingCraftHeader(false);
+    }
+  };
+
+  const handleOpenAddCraftStep = () => {
+    setEditingCraftStep(null);
+    const nextNum = craftSteps.length + 1;
+    setStepFormNum(nextNum < 10 ? `0${nextNum}` : `${nextNum}`);
+    setStepFormTitle('');
+    setStepFormSubtitle('');
+    setStepFormIcon('Sparkles');
+    setStepFormDesc('');
+    setStepFormOrder(nextNum);
+    setStepFormIsActive(true);
+    setIsCraftStepModalOpen(true);
+  };
+
+  const handleOpenEditCraftStep = (step: MockCraftStep) => {
+    setEditingCraftStep(step);
+    setStepFormNum(step.num);
+    setStepFormTitle(step.title);
+    setStepFormSubtitle(step.subtitle);
+    setStepFormIcon(step.icon || 'Sparkles');
+    setStepFormDesc(step.desc);
+    setStepFormOrder(step.order || 1);
+    setStepFormIsActive(step.isActive !== false);
+    setIsCraftStepModalOpen(true);
+  };
+
+  const handleSaveCraftStep = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stepFormTitle.trim() || !stepFormDesc.trim()) {
+      showToast('❌ Step Title and Description are required.');
+      return;
+    }
+
+    setIsSavingCraftStep(true);
+    try {
+      const payload = {
+        num: stepFormNum.trim(),
+        title: stepFormTitle.trim(),
+        subtitle: stepFormSubtitle.trim() || 'Pure Nut Nutrition',
+        icon: stepFormIcon,
+        desc: stepFormDesc.trim(),
+        order: Number(stepFormOrder) || 1,
+        isActive: stepFormIsActive
+      };
+
+      if (editingCraftStep) {
+        let res = await fetch(`/api/craft/steps/${editingCraftStep.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          res = await fetch(`http://localhost:5000/api/craft/steps/${editingCraftStep.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+        const data = await res.json();
+        if (data.success && data.allSteps) {
+          setCraftSteps(data.allSteps);
+          showToast('✅ Craft step updated successfully!');
+          setIsCraftStepModalOpen(false);
+        } else {
+          showToast(`❌ ${data.message || 'Failed to update step'}`);
+        }
+      } else {
+        let res = await fetch('/api/craft/steps', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          res = await fetch('http://localhost:5000/api/craft/steps', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+        const data = await res.json();
+        if (data.success && data.allSteps) {
+          setCraftSteps(data.allSteps);
+          showToast('✅ Craft step added successfully!');
+          setIsCraftStepModalOpen(false);
+        } else {
+          showToast(`❌ ${data.message || 'Failed to create step'}`);
+        }
+      }
+    } catch {
+      showToast('❌ Network error while saving craft step.');
+    } finally {
+      setIsSavingCraftStep(false);
+    }
+  };
+
+  const handleDeleteCraftStep = async (stepId: string, stepTitle: string) => {
+    if (!window.confirm(`Are you sure you want to delete this process step?\n\n"${stepTitle}"`)) return;
+
+    try {
+      let res = await fetch(`/api/craft/steps/${stepId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        res = await fetch(`http://localhost:5000/api/craft/steps/${stepId}`, { method: 'DELETE' });
+      }
+      const data = await res.json();
+      if (res.ok && data.success && data.allSteps) {
+        setCraftSteps(data.allSteps);
+        showToast('🗑️ Craft step deleted successfully!');
+      } else {
+        showToast(`❌ ${data.message || 'Failed to delete step'}`);
+      }
+    } catch {
+      showToast('❌ Network error while deleting step.');
+    }
+  };
+
+  const handleToggleCraftStepStatus = async (step: MockCraftStep) => {
+    try {
+      const nextStatus = !step.isActive;
+      let res = await fetch(`/api/craft/steps/${step.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: nextStatus })
+      });
+      if (!res.ok) {
+        res = await fetch(`http://localhost:5000/api/craft/steps/${step.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive: nextStatus })
+        });
+      }
+      const data = await res.json();
+      if (res.ok && data.success && data.allSteps) {
+        setCraftSteps(data.allSteps);
+        showToast(`Step is now ${nextStatus ? 'Live on Store' : 'Hidden'}`);
+      }
+    } catch {
+      showToast('❌ Could not toggle step status');
+    }
+  };
+
+  const handleSaveLifestyleHeader = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingLifestyleHeader(true);
+    try {
+      const payload = {
+        badge: lifestyleBadge.trim(),
+        heading: lifestyleHeading.trim(),
+        description: lifestyleDesc.trim()
+      };
+      let res = await fetch('/api/lifestyle', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        res = await fetch('http://localhost:5000/api/lifestyle', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+      const data = await res.json();
+      if (data.success) {
+        showToast('✅ Lifestyle section header updated successfully!');
+      } else {
+        showToast(`❌ ${data.message || 'Failed to update header'}`);
+      }
+    } catch {
+      showToast('❌ Network error while saving lifestyle header.');
+    } finally {
+      setIsSavingLifestyleHeader(false);
+    }
+  };
+
+  const handleOpenAddPillar = () => {
+    setEditingPillar(null);
+    setPillarFormIcon('Dumbbell');
+    setPillarFormTitle('');
+    setPillarFormSubtitle('');
+    setPillarFormDesc('');
+    setPillarFormPerk('');
+    setPillarFormOrder(lifestylePillars.length + 1);
+    setPillarFormIsActive(true);
+    setIsPillarModalOpen(true);
+  };
+
+  const handleOpenEditPillar = (pillar: MockLifestylePillar) => {
+    setEditingPillar(pillar);
+    setPillarFormIcon(pillar.icon || 'Dumbbell');
+    setPillarFormTitle(pillar.title);
+    setPillarFormSubtitle(pillar.subtitle);
+    setPillarFormDesc(pillar.desc);
+    setPillarFormPerk(pillar.perk);
+    setPillarFormOrder(pillar.order || 1);
+    setPillarFormIsActive(pillar.isActive !== false);
+    setIsPillarModalOpen(true);
+  };
+
+  const handleSavePillar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pillarFormTitle.trim() || !pillarFormDesc.trim()) {
+      showToast('❌ Title and Description are required.');
+      return;
+    }
+
+    setIsSavingPillar(true);
+    try {
+      const payload = {
+        icon: pillarFormIcon,
+        title: pillarFormTitle.trim(),
+        subtitle: pillarFormSubtitle.trim() || 'Daily Nutrition',
+        desc: pillarFormDesc.trim(),
+        perk: pillarFormPerk.trim() || '100% pure nutrition',
+        order: Number(pillarFormOrder) || 1,
+        isActive: pillarFormIsActive
+      };
+
+      if (editingPillar) {
+        let res = await fetch(`/api/lifestyle/pillars/${editingPillar.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          res = await fetch(`http://localhost:5000/api/lifestyle/pillars/${editingPillar.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+        const data = await res.json();
+        if (data.success && data.allPillars) {
+          setLifestylePillars(data.allPillars);
+          showToast('✅ Lifestyle card updated successfully!');
+          setIsPillarModalOpen(false);
+        } else {
+          showToast(`❌ ${data.message || 'Failed to update pillar'}`);
+        }
+      } else {
+        let res = await fetch('/api/lifestyle/pillars', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          res = await fetch('http://localhost:5000/api/lifestyle/pillars', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+        const data = await res.json();
+        if (data.success && data.allPillars) {
+          setLifestylePillars(data.allPillars);
+          showToast('✅ Lifestyle card added successfully!');
+          setIsPillarModalOpen(false);
+        } else {
+          showToast(`❌ ${data.message || 'Failed to create pillar'}`);
+        }
+      }
+    } catch {
+      showToast('❌ Network error while saving lifestyle card.');
+    } finally {
+      setIsSavingPillar(false);
+    }
+  };
+
+  const handleDeletePillar = async (pillarId: string, title: string) => {
+    if (!window.confirm(`Are you sure you want to delete this lifestyle card?\n\n"${title}"`)) return;
+
+    try {
+      let res = await fetch(`/api/lifestyle/pillars/${pillarId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        res = await fetch(`http://localhost:5000/api/lifestyle/pillars/${pillarId}`, { method: 'DELETE' });
+      }
+      const data = await res.json();
+      if (res.ok && data.success && data.allPillars) {
+        setLifestylePillars(data.allPillars);
+        showToast('🗑️ Lifestyle card deleted successfully!');
+      } else {
+        showToast(`❌ ${data.message || 'Failed to delete pillar'}`);
+      }
+    } catch {
+      showToast('❌ Network error while deleting pillar.');
+    }
+  };
+
+  const handleTogglePillarStatus = async (pillar: MockLifestylePillar) => {
+    try {
+      const nextStatus = !pillar.isActive;
+      let res = await fetch(`/api/lifestyle/pillars/${pillar.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: nextStatus })
+      });
+      if (!res.ok) {
+        res = await fetch(`http://localhost:5000/api/lifestyle/pillars/${pillar.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive: nextStatus })
+        });
+      }
+      const data = await res.json();
+      if (res.ok && data.success && data.allPillars) {
+        setLifestylePillars(data.allPillars);
+        showToast(`Card is now ${nextStatus ? 'Live on Store' : 'Hidden'}`);
+      }
+    } catch {
+      showToast('❌ Could not toggle card status');
+    }
+  };
+
+  // ══════════════════════════════════════════════════════════
+  // BENEFIT COMPARISON SECTION HANDLERS
+  // ══════════════════════════════════════════════════════════
+  const handleSaveBenefitHeader = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsSavingBenefitHeader(true);
+    try {
+      const payload = {
+        badge: benefitBadge,
+        heading: benefitHeading,
+        description: benefitDesc,
+        footerBanner: benefitFooterBanner,
+        footerLinkText: benefitFooterLinkText,
+        footerLinkUrl: benefitFooterLinkUrl
+      };
+      let res = await fetch('/api/benefit', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        res = await fetch('http://localhost:5000/api/benefit', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast('✓ Benefit section headers saved & live on store!');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('nuttryx_benefit_updated'));
+        }
+      } else {
+        showToast(`❌ ${data.message || 'Failed to save benefit header'}`);
+      }
+    } catch {
+      showToast('❌ Network error while saving benefit section.');
+    } finally {
+      setIsSavingBenefitHeader(false);
+    }
+  };
+
+  const handleOpenAddBenefitRow = () => {
+    setEditingBenefitRow(null);
+    setBenefitFormFeature('');
+    setBenefitFormNuttryx('');
+    setBenefitFormRegular('');
+    setBenefitFormOrder(benefitRows.length + 1);
+    setBenefitFormIsActive(true);
+    setIsBenefitModalOpen(true);
+  };
+
+  const handleOpenEditBenefitRow = (row: MockBenefitRow) => {
+    setEditingBenefitRow(row);
+    setBenefitFormFeature(row.feature || '');
+    setBenefitFormNuttryx(row.nuttryx || '');
+    setBenefitFormRegular(row.regular || '');
+    setBenefitFormOrder(row.order || 1);
+    setBenefitFormIsActive(row.isActive !== false);
+    setIsBenefitModalOpen(true);
+  };
+
+  const handleSaveBenefitRow = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!benefitFormFeature.trim() || !benefitFormNuttryx.trim() || !benefitFormRegular.trim()) {
+      showToast('⚠️ Please fill in all comparison fields');
+      return;
+    }
+
+    setIsSavingBenefitRow(true);
+    try {
+      const payload = {
+        feature: benefitFormFeature.trim(),
+        nuttryx: benefitFormNuttryx.trim(),
+        regular: benefitFormRegular.trim(),
+        order: Number(benefitFormOrder) || 1,
+        isActive: benefitFormIsActive,
+        nuttryxWins: true
+      };
+
+      let res: Response;
+      if (editingBenefitRow) {
+        res = await fetch(`/api/benefit/rows/${editingBenefitRow.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          res = await fetch(`http://localhost:5000/api/benefit/rows/${editingBenefitRow.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+      } else {
+        res = await fetch('/api/benefit/rows', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          res = await fetch('http://localhost:5000/api/benefit/rows', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+      }
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (data.section && Array.isArray(data.section.rows)) {
+          setBenefitRows(data.section.rows);
+        } else if (data.data) {
+          if (editingBenefitRow) {
+            setBenefitRows(prev => prev.map(r => r.id === editingBenefitRow.id ? data.data : r));
+          } else {
+            setBenefitRows(prev => [...prev, data.data]);
+          }
+        }
+        showToast(editingBenefitRow ? '✓ Comparison row updated!' : '✓ New row added!');
+        setIsBenefitModalOpen(false);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('nuttryx_benefit_updated'));
+        }
+      } else {
+        showToast(`❌ ${data.message || 'Failed to save row'}`);
+      }
+    } catch {
+      showToast('❌ Network error while saving comparison row.');
+    } finally {
+      setIsSavingBenefitRow(false);
+    }
+  };
+
+  const handleDeleteBenefitRow = async (rowId: string, feature: string) => {
+    if (!window.confirm(`Are you sure you want to delete this row?\n\n"${feature}"`)) return;
+
+    try {
+      let res = await fetch(`/api/benefit/rows/${rowId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        res = await fetch(`http://localhost:5000/api/benefit/rows/${rowId}`, { method: 'DELETE' });
+      }
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (data.section && Array.isArray(data.section.rows)) {
+          setBenefitRows(data.section.rows);
+        } else {
+          setBenefitRows(prev => prev.filter(r => r.id !== rowId));
+        }
+        showToast('🗑️ Comparison row deleted successfully!');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('nuttryx_benefit_updated'));
+        }
+      } else {
+        showToast(`❌ ${data.message || 'Failed to delete row'}`);
+      }
+    } catch {
+      showToast('❌ Network error while deleting comparison row.');
+    }
+  };
+
+  const handleToggleBenefitRowStatus = async (row: MockBenefitRow) => {
+    try {
+      const nextStatus = row.isActive === false;
+      let res = await fetch(`/api/benefit/rows/${row.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: nextStatus })
+      });
+      if (!res.ok) {
+        res = await fetch(`http://localhost:5000/api/benefit/rows/${row.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive: nextStatus })
+        });
+      }
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setBenefitRows(prev => prev.map(r => r.id === row.id ? { ...r, isActive: nextStatus } : r));
+        showToast(`Row is now ${nextStatus ? 'Live on Store' : 'Hidden'}`);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('nuttryx_benefit_updated'));
+        }
+      }
+    } catch {
+      showToast('❌ Could not toggle row status');
+    }
+  };
+
+  // ══════════════════════════════════════════════════════════
+  // CUSTOMER REVIEWS HANDLERS
+  // ══════════════════════════════════════════════════════════
+  const handleOpenAddReview = () => {
+    setEditingReview(null);
+    setReviewFormName('');
+    setReviewFormRole('');
+    setReviewFormRating(5);
+    setReviewFormFlavour('Dark Chocolate Peanut Butter');
+    setReviewFormComment('');
+    setReviewFormIsVerified(true);
+    setReviewFormIsActive(true);
+    setIsReviewModalOpen(true);
+  };
+
+  const handleOpenEditReview = (rev: MockReview) => {
+    setEditingReview(rev);
+    setReviewFormName(rev.name || '');
+    setReviewFormRole(rev.role || '');
+    setReviewFormRating(rev.rating || 5);
+    setReviewFormFlavour(rev.flavour || 'Dark Chocolate Peanut Butter');
+    setReviewFormComment(rev.comment || '');
+    setReviewFormIsVerified(rev.isVerified !== false);
+    setReviewFormIsActive(rev.isActive !== false);
+    setIsReviewModalOpen(true);
+  };
+
+  const handleSaveReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewFormName.trim() || !reviewFormComment.trim()) {
+      showToast('⚠️ Name and review comment are required');
+      return;
+    }
+
+    setIsSavingReview(true);
+    try {
+      const payload = {
+        name: reviewFormName.trim(),
+        role: reviewFormRole.trim() || 'Verified Buyer',
+        rating: Number(reviewFormRating) || 5,
+        flavour: reviewFormFlavour.trim(),
+        comment: reviewFormComment.trim(),
+        isVerified: reviewFormIsVerified,
+        isActive: reviewFormIsActive
+      };
+
+      let res: Response;
+      if (editingReview) {
+        res = await fetch(`/api/reviews/${editingReview.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          res = await fetch(`http://localhost:5000/api/reviews/${editingReview.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+      } else {
+        res = await fetch('/api/reviews', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          res = await fetch('http://localhost:5000/api/reviews', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+      }
+
+      const data = await res.json();
+      if (res.ok && data.success && data.data) {
+        if (editingReview) {
+          setReviewsList(prev => prev.map(r => r.id === editingReview.id ? data.data : r));
+        } else {
+          setReviewsList(prev => [data.data, ...prev]);
+        }
+        showToast(editingReview ? '✓ Review updated successfully!' : '✓ Review added successfully!');
+        setIsReviewModalOpen(false);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('nuttryx_reviews_updated'));
+        }
+      } else {
+        showToast(`❌ ${data.message || 'Failed to save review'}`);
+      }
+    } catch {
+      showToast('❌ Network error while saving review.');
+    } finally {
+      setIsSavingReview(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: string, reviewerName: string) => {
+    if (!window.confirm(`Are you sure you want to delete this review by "${reviewerName}"?`)) return;
+
+    try {
+      let res = await fetch(`/api/reviews/${reviewId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        res = await fetch(`http://localhost:5000/api/reviews/${reviewId}`, { method: 'DELETE' });
+      }
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setReviewsList(prev => prev.filter(r => r.id !== reviewId));
+        showToast('🗑️ Review deleted successfully!');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('nuttryx_reviews_updated'));
+        }
+      } else {
+        showToast(`❌ ${data.message || 'Failed to delete review'}`);
+      }
+    } catch {
+      showToast('❌ Network error while deleting review.');
+    }
+  };
+
+  const handleToggleReviewStatus = async (rev: MockReview) => {
+    try {
+      const nextStatus = rev.isActive === false;
+      let res = await fetch(`/api/reviews/${rev.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: nextStatus })
+      });
+      if (!res.ok) {
+        res = await fetch(`http://localhost:5000/api/reviews/${rev.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive: nextStatus })
+        });
+      }
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setReviewsList(prev => prev.map(r => r.id === rev.id ? { ...r, isActive: nextStatus } : r));
+        showToast(`Review is now ${nextStatus ? 'Live on Store' : 'Hidden'}`);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('nuttryx_reviews_updated'));
+        }
+      }
+    } catch {
+      showToast('❌ Could not toggle review status');
+    }
+  };
+
   if (!isAdminAuthenticated) {
     return (
       <div style={{ minHeight: '100vh', background: '#1A0D07', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
@@ -1284,6 +2376,126 @@ export default function AdminDashboard() {
           </button>
 
           <button
+            onClick={() => setActiveTab('faqs')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 14px',
+              borderRadius: '8px',
+              background: activeTab === 'faqs' ? 'rgba(217, 130, 43, 0.2)' : 'transparent',
+              color: activeTab === 'faqs' ? '#FFD199' : '#C7B9B0',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 700,
+              fontSize: '0.92rem',
+              textAlign: 'left',
+              position: 'relative'
+            }}
+          >
+            <HelpCircle size={18} /> FAQs & Questions
+            <span style={{ marginLeft: 'auto', background: '#D9822B', color: '#FFF', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '99px' }}>
+              {faqsList.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('craft')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 14px',
+              borderRadius: '8px',
+              background: activeTab === 'craft' ? 'rgba(217, 130, 43, 0.2)' : 'transparent',
+              color: activeTab === 'craft' ? '#FFD199' : '#C7B9B0',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 700,
+              fontSize: '0.92rem',
+              textAlign: 'left',
+              position: 'relative'
+            }}
+          >
+            <ShieldCheck size={18} /> Our Story (Pure Craft)
+            <span style={{ marginLeft: 'auto', background: '#D9822B', color: '#FFF', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '99px' }}>
+              {craftSteps.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('lifestyle')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 14px',
+              borderRadius: '8px',
+              background: activeTab === 'lifestyle' ? 'rgba(217, 130, 43, 0.2)' : 'transparent',
+              color: activeTab === 'lifestyle' ? '#FFD199' : '#C7B9B0',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 700,
+              fontSize: '0.92rem',
+              textAlign: 'left',
+              position: 'relative'
+            }}
+          >
+            <Users size={18} /> Built For Lifestyle
+            <span style={{ marginLeft: 'auto', background: '#D9822B', color: '#FFF', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '99px' }}>
+              {lifestylePillars.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('benefit')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 14px',
+              borderRadius: '8px',
+              background: activeTab === 'benefit' ? 'rgba(217, 130, 43, 0.2)' : 'transparent',
+              color: activeTab === 'benefit' ? '#FFD199' : '#C7B9B0',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 700,
+              fontSize: '0.92rem',
+              textAlign: 'left',
+              position: 'relative'
+            }}
+          >
+            <Award size={18} /> Why Nuttryx (Table)
+            <span style={{ marginLeft: 'auto', background: '#D9822B', color: '#FFF', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '99px' }}>
+              {benefitRows.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('reviews')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 14px',
+              borderRadius: '8px',
+              background: activeTab === 'reviews' ? 'rgba(217, 130, 43, 0.2)' : 'transparent',
+              color: activeTab === 'reviews' ? '#FFD199' : '#C7B9B0',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 700,
+              fontSize: '0.92rem',
+              textAlign: 'left',
+              position: 'relative'
+            }}
+          >
+            <MessageSquareHeart size={18} /> Customer Reviews
+            <span style={{ marginLeft: 'auto', background: '#D9822B', color: '#FFF', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '99px' }}>
+              {reviewsList.length}
+            </span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('settings')}
             style={{
               display: 'flex',
@@ -1373,6 +2585,11 @@ export default function AdminDashboard() {
               {activeTab === 'samples' && 'Sample Claims & Dispatch'}
               {activeTab === 'sliders' && 'Hero Sliders & Banners'}
               {activeTab === 'ticker' && 'Running Marquee Ticker'}
+              {activeTab === 'faqs' && 'Frequently Asked Questions (FAQ)'}
+              {activeTab === 'craft' && 'Our Story — The Pure Craft'}
+              {activeTab === 'lifestyle' && 'Built For Every Lifestyle (Pillars)'}
+              {activeTab === 'benefit' && 'Clean Label Revolution — Why NUTTRYX Wins'}
+              {activeTab === 'reviews' && 'Customer Reviews & Real Testimonials'}
               {activeTab === 'settings' && 'Factory, Location & Support Settings'}
             </h1>
             <p style={{ fontSize: '0.82rem', color: '#736257', marginTop: '3px', marginBottom: 0 }}>
@@ -3033,6 +4250,1739 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* ── TAB: FAQS & QUESTIONS ── */}
+          {activeTab === 'faqs' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Header Banner */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, #FFFFFF 0%, #FAF5EE 100%)',
+                  padding: '24px',
+                  borderRadius: '16px',
+                  border: '1px solid #ECE4D8',
+                  boxShadow: '0 4px 20px rgba(74, 34, 18, 0.05)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '16px'
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '10px',
+                        background: 'rgba(217, 130, 43, 0.12)',
+                        color: '#D9822B',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <HelpCircle size={20} />
+                    </div>
+                    <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#20100A', margin: 0 }}>
+                      Store FAQs & Question Management
+                    </h2>
+                  </div>
+                  <p style={{ fontSize: '0.85rem', color: '#736257', marginTop: '6px', marginBottom: 0 }}>
+                    Add, edit, reorder or toggle customer questions displayed in the storefront FAQ section.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleOpenAddFaq}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px 20px',
+                    borderRadius: '10px',
+                    background: 'linear-gradient(135deg, #D9822B 0%, #B8671B 100%)',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    fontWeight: 800,
+                    fontSize: '0.92rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(217, 130, 43, 0.35)',
+                    transition: 'transform 0.15s ease'
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-1px)')}
+                  onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
+                >
+                  <Plus size={18} />
+                  Add New Question
+                </button>
+              </div>
+
+              {/* Filters & Search */}
+              <div
+                style={{
+                  background: '#FFFFFF',
+                  padding: '16px 20px',
+                  borderRadius: '14px',
+                  border: '1px solid #ECE4D8',
+                  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.02)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '14px'
+                }}
+              >
+                {/* Search Bar */}
+                <div
+                  style={{
+                    position: 'relative',
+                    flex: '1 1 300px',
+                    maxWidth: '450px'
+                  }}
+                >
+                  <Search
+                    size={17}
+                    style={{
+                      position: 'absolute',
+                      left: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: '#8A7669'
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={faqSearchQuery}
+                    onChange={e => setFaqSearchQuery(e.target.value)}
+                    placeholder="Search questions or answers..."
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px 10px 38px',
+                      borderRadius: '8px',
+                      border: '1.5px solid #ECE4D8',
+                      fontSize: '0.88rem',
+                      color: '#20100A',
+                      background: '#FAF8F5',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                {/* Category Pills */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {['All', 'Purity & Quality', 'Diet & Health', 'Storage & Freshness', 'Samples & Orders', 'General'].map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setFaqCategoryFilter(cat)}
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: '20px',
+                        border: faqCategoryFilter === cat ? '1.5px solid #D9822B' : '1.5px solid #ECE4D8',
+                        background: faqCategoryFilter === cat ? 'rgba(217, 130, 43, 0.12)' : '#FAF8F5',
+                        color: faqCategoryFilter === cat ? '#D9822B' : '#736257',
+                        fontWeight: faqCategoryFilter === cat ? 800 : 600,
+                        fontSize: '0.82rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* FAQs List */}
+              {(() => {
+                const filtered = faqsList
+                  .filter(faq => {
+                    const matchesCategory = faqCategoryFilter === 'All' || (faq.category || 'General').toLowerCase() === faqCategoryFilter.toLowerCase();
+                    const q = faqSearchQuery.toLowerCase();
+                    const matchesSearch = !q || (faq.question && faq.question.toLowerCase().includes(q)) || (faq.answer && faq.answer.toLowerCase().includes(q));
+                    return matchesCategory && matchesSearch;
+                  })
+                  .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+                if (filtered.length === 0) {
+                  return (
+                    <div
+                      style={{
+                        background: '#FFFFFF',
+                        borderRadius: '16px',
+                        padding: '60px 20px',
+                        textAlign: 'center',
+                        border: '1px dashed #D6C8BC'
+                      }}
+                    >
+                      <HelpCircle size={44} style={{ color: '#C2B4A8', margin: '0 auto 14px' }} />
+                      <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                        No FAQ Questions Found
+                      </h4>
+                      <p style={{ fontSize: '0.88rem', color: '#8A7669', marginBottom: '20px' }}>
+                        {faqSearchQuery || faqCategoryFilter !== 'All'
+                          ? 'Try adjusting your search query or category filter.'
+                          : 'You haven’t added any FAQ items yet. Click below to add one!'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleOpenAddFaq}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '10px 18px',
+                          borderRadius: '8px',
+                          background: '#D9822B',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          fontWeight: 700,
+                          fontSize: '0.88rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <Plus size={16} /> Add First Question
+                      </button>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {filtered.map((faq, idx) => (
+                      <div
+                        key={faq.id || idx}
+                        style={{
+                          background: '#FFFFFF',
+                          borderRadius: '14px',
+                          border: '1px solid #ECE4D8',
+                          padding: '20px 24px',
+                          boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                          gap: '20px',
+                          opacity: faq.isActive !== false ? 1 : 0.65,
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ flex: 1 }}>
+                          {/* Badges row */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                            <span
+                              style={{
+                                fontSize: '0.75rem',
+                                fontWeight: 800,
+                                background: '#F5ECE3',
+                                color: '#4A2212',
+                                padding: '3px 10px',
+                                borderRadius: '6px'
+                              }}
+                            >
+                              Order #{faq.order || idx + 1}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                background: 'rgba(217, 130, 43, 0.12)',
+                                color: '#D9822B',
+                                padding: '3px 10px',
+                                borderRadius: '6px'
+                              }}
+                            >
+                              {faq.category || 'General'}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                padding: '3px 10px',
+                                borderRadius: '6px',
+                                background: faq.isActive !== false ? 'rgba(34, 197, 94, 0.12)' : 'rgba(156, 163, 175, 0.15)',
+                                color: faq.isActive !== false ? '#15803D' : '#6B7280'
+                              }}
+                            >
+                              {faq.isActive !== false ? '● Live on Store' : '○ Hidden'}
+                            </span>
+                          </div>
+
+                          {/* Question */}
+                          <h3
+                            style={{
+                              fontSize: '1.05rem',
+                              fontWeight: 800,
+                              color: '#20100A',
+                              marginBottom: '8px',
+                              lineHeight: 1.4
+                            }}
+                          >
+                            {faq.question}
+                          </h3>
+
+                          {/* Answer */}
+                          <p
+                            style={{
+                              fontSize: '0.9rem',
+                              color: '#5A463B',
+                              lineHeight: 1.55,
+                              margin: 0,
+                              whiteSpace: 'pre-line'
+                            }}
+                          >
+                            {faq.answer}
+                          </p>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                          {/* Toggle Active status */}
+                          <button
+                            type="button"
+                            title={faq.isActive !== false ? 'Hide from store' : 'Publish to store'}
+                            onClick={() => handleToggleFaqStatus(faq)}
+                            style={{
+                              padding: '8px 12px',
+                              borderRadius: '8px',
+                              border: '1px solid #ECE4D8',
+                              background: '#FAF8F5',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontSize: '0.8rem',
+                              fontWeight: 700,
+                              color: faq.isActive !== false ? '#4A3B32' : '#8A7669'
+                            }}
+                          >
+                            {faq.isActive !== false ? <Eye size={15} color="#15803D" /> : <EyeOff size={15} color="#9CA3AF" />}
+                            <span>{faq.isActive !== false ? 'Active' : 'Hidden'}</span>
+                          </button>
+
+                          {/* Edit button */}
+                          <button
+                            type="button"
+                            title="Edit FAQ"
+                            onClick={() => handleOpenEditFaq(faq)}
+                            style={{
+                              padding: '8px 12px',
+                              borderRadius: '8px',
+                              border: '1px solid #D9822B',
+                              background: 'rgba(217, 130, 43, 0.08)',
+                              color: '#D9822B',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontSize: '0.8rem',
+                              fontWeight: 700
+                            }}
+                          >
+                            <Edit3 size={15} />
+                            <span>Edit</span>
+                          </button>
+
+                          {/* Delete button */}
+                          <button
+                            type="button"
+                            title="Delete FAQ"
+                            onClick={() => handleDeleteFaq(faq.id, faq.question)}
+                            style={{
+                              padding: '8px 10px',
+                              borderRadius: '8px',
+                              border: '1px solid #FCA5A5',
+                              background: '#FEF2F2',
+                              color: '#DC2626',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center'
+                            }}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* ── TAB: PURE CRAFT & STORY ── */}
+          {activeTab === 'craft' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Header Configuration Card */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, #FFFFFF 0%, #FAF5EE 100%)',
+                  padding: '24px',
+                  borderRadius: '16px',
+                  border: '1px solid #ECE4D8',
+                  boxShadow: '0 4px 20px rgba(74, 34, 18, 0.05)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: 'rgba(217, 130, 43, 0.12)',
+                      color: '#D9822B',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <ShieldCheck size={20} />
+                  </div>
+                  <div>
+                    <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#20100A', margin: 0 }}>
+                      Our Story — The Pure Craft & Process Story
+                    </h2>
+                    <p style={{ fontSize: '0.85rem', color: '#736257', marginTop: '2px', marginBottom: 0 }}>
+                      Control the Our Story section badge, heading, and individual process cards displayed on the storefront.
+                    </p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSaveCraftHeader} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                        Section Badge Tag
+                      </label>
+                      <input
+                        type="text"
+                        value={craftBadge}
+                        onChange={e => setCraftBadge(e.target.value)}
+                        placeholder="e.g. THE PURE CRAFT"
+                        style={{
+                          width: '100%',
+                          padding: '10px 14px',
+                          borderRadius: '8px',
+                          border: '1.5px solid #ECE4D8',
+                          fontSize: '0.88rem',
+                          color: '#20100A',
+                          background: '#FAF8F5',
+                          outline: 'none',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                        Main Section Heading
+                      </label>
+                      <input
+                        type="text"
+                        value={craftHeading}
+                        onChange={e => setCraftHeading(e.target.value)}
+                        placeholder="e.g. From Gujarat Soil to Your Spoon"
+                        style={{
+                          width: '100%',
+                          padding: '10px 14px',
+                          borderRadius: '8px',
+                          border: '1.5px solid #ECE4D8',
+                          fontSize: '0.88rem',
+                          color: '#20100A',
+                          background: '#FAF8F5',
+                          outline: 'none',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Subheading / Mission Description
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={craftDesc}
+                      onChange={e => setCraftDesc(e.target.value)}
+                      placeholder="e.g. No chemical emulsifiers, no hydrogenated palm oils, no shortcuts. Just honest Indian peanuts transformed into pure nutrition."
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.88rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        resize: 'vertical',
+                        boxSizing: 'border-box',
+                        lineHeight: 1.5
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button
+                      type="submit"
+                      disabled={isSavingCraftHeader}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 20px',
+                        borderRadius: '8px',
+                        background: 'linear-gradient(135deg, #D9822B 0%, #B8671B 100%)',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        fontWeight: 800,
+                        fontSize: '0.88rem',
+                        cursor: isSavingCraftHeader ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 4px 14px rgba(217, 130, 43, 0.35)',
+                        opacity: isSavingCraftHeader ? 0.7 : 1
+                      }}
+                    >
+                      {isSavingCraftHeader ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                      {isSavingCraftHeader ? 'Saving Header...' : 'Save Section Header'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Steps Management List */}
+              <div
+                style={{
+                  background: '#FFFFFF',
+                  padding: '24px',
+                  borderRadius: '16px',
+                  border: '1px solid #ECE4D8',
+                  boxShadow: '0 4px 20px rgba(74, 34, 18, 0.05)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '14px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#20100A', margin: 0 }}>
+                      Process & Crafting Steps ({craftSteps.length})
+                    </h3>
+                    <p style={{ fontSize: '0.82rem', color: '#736257', margin: '3px 0 0' }}>
+                      Individual process cards (01, 02, 03, 04...) shown on the website store.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleOpenAddCraftStep}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 18px',
+                      borderRadius: '8px',
+                      background: '#D9822B',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      fontWeight: 800,
+                      fontSize: '0.88rem',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 14px rgba(217, 130, 43, 0.35)'
+                    }}
+                  >
+                    <Plus size={16} /> Add New Step
+                  </button>
+                </div>
+
+                {/* Steps Cards Grid */}
+                {craftSteps.length === 0 ? (
+                  <div
+                    style={{
+                      padding: '40px 20px',
+                      textAlign: 'center',
+                      border: '1px dashed #D6C8BC',
+                      borderRadius: '12px',
+                      background: '#FAF8F5'
+                    }}
+                  >
+                    <ShieldCheck size={40} style={{ color: '#C2B4A8', margin: '0 auto 10px' }} />
+                    <p style={{ color: '#8A7669', fontSize: '0.9rem', margin: 0 }}>
+                      No craft steps found. Click &quot;Add New Step&quot; above to create one.
+                    </p>
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                      gap: '16px'
+                    }}
+                  >
+                    {[...craftSteps].sort((a, b) => (a.order || 0) - (b.order || 0)).map((step, idx) => (
+                      <div
+                        key={step.id || idx}
+                        style={{
+                          background: '#FAF8F5',
+                          borderRadius: '14px',
+                          border: '1.5px solid #ECE4D8',
+                          padding: '20px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          gap: '14px',
+                          opacity: step.isActive !== false ? 1 : 0.65,
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div>
+                          {/* Top row: Number + Icon + Status */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span
+                                style={{
+                                  fontSize: '1.4rem',
+                                  fontWeight: 900,
+                                  color: '#D9822B',
+                                  fontFamily: 'monospace'
+                                }}
+                              >
+                                {step.num || `0${idx + 1}`}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: '0.72rem',
+                                  fontWeight: 700,
+                                  background: '#F5ECE3',
+                                  color: '#4A2212',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px'
+                                }}
+                              >
+                                #{step.order || idx + 1}
+                              </span>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span
+                                style={{
+                                  fontSize: '0.72rem',
+                                  fontWeight: 800,
+                                  padding: '2px 8px',
+                                  borderRadius: '6px',
+                                  background: step.isActive !== false ? 'rgba(34, 197, 94, 0.12)' : 'rgba(156, 163, 175, 0.15)',
+                                  color: step.isActive !== false ? '#15803D' : '#6B7280'
+                                }}
+                              >
+                                {step.isActive !== false ? 'Live' : 'Hidden'}
+                              </span>
+                              <div
+                                style={{
+                                  width: '32px',
+                                  height: '32px',
+                                  borderRadius: '50%',
+                                  background: 'rgba(217, 130, 43, 0.15)',
+                                  color: '#D9822B',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                              >
+                                <Sparkles size={16} />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Subtitle tag */}
+                          <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#D9822B', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>
+                            {step.subtitle}
+                          </div>
+
+                          {/* Title */}
+                          <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#20100A', margin: '0 0 8px', lineHeight: 1.35 }}>
+                            {step.title}
+                          </h4>
+
+                          {/* Description */}
+                          <p style={{ fontSize: '0.84rem', color: '#5A463B', lineHeight: 1.55, margin: 0 }}>
+                            {step.desc}
+                          </p>
+                        </div>
+
+                        {/* Bottom action bar */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px solid #ECE4D8' }}>
+                          <button
+                            type="button"
+                            title={step.isActive !== false ? 'Hide from storefront' : 'Publish to storefront'}
+                            onClick={() => handleToggleCraftStepStatus(step)}
+                            style={{
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              border: '1px solid #ECE4D8',
+                              background: '#FFFFFF',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '5px',
+                              fontSize: '0.78rem',
+                              fontWeight: 700,
+                              color: step.isActive !== false ? '#15803D' : '#6B7280'
+                            }}
+                          >
+                            {step.isActive !== false ? <Eye size={14} /> : <EyeOff size={14} />}
+                            <span>{step.isActive !== false ? 'Active' : 'Hidden'}</span>
+                          </button>
+
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditCraftStep(step)}
+                              style={{
+                                padding: '6px 10px',
+                                borderRadius: '6px',
+                                border: '1px solid #D9822B',
+                                background: 'rgba(217, 130, 43, 0.08)',
+                                color: '#D9822B',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                fontSize: '0.78rem',
+                                fontWeight: 700
+                              }}
+                            >
+                              <Edit3 size={14} />
+                              <span>Edit</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteCraftStep(step.id, step.title)}
+                              style={{
+                                padding: '6px 8px',
+                                borderRadius: '6px',
+                                border: '1px solid #FCA5A5',
+                                background: '#FEF2F2',
+                                color: '#DC2626',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center'
+                              }}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── TAB: LIFESTYLE & AUDIENCE ── */}
+          {activeTab === 'lifestyle' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Header Configuration Card */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, #FFFFFF 0%, #FAF5EE 100%)',
+                  padding: '24px',
+                  borderRadius: '16px',
+                  border: '1px solid #ECE4D8',
+                  boxShadow: '0 4px 20px rgba(74, 34, 18, 0.05)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: 'rgba(217, 130, 43, 0.12)',
+                      color: '#D9822B',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <Users size={20} />
+                  </div>
+                  <div>
+                    <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#20100A', margin: 0 }}>
+                      Who Is NUTTRYX Crafted For? — Lifestyle & Brand Focus
+                    </h2>
+                    <p style={{ fontSize: '0.85rem', color: '#736257', marginTop: '2px', marginBottom: 0 }}>
+                      Manage the target audience section, banner headings, and the 4 lifestyle benefit cards on the homepage.
+                    </p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSaveLifestyleHeader} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                        Section Badge Tag
+                      </label>
+                      <input
+                        type="text"
+                        value={lifestyleBadge}
+                        onChange={e => setLifestyleBadge(e.target.value)}
+                        placeholder="e.g. BUILT FOR EVERY LIFESTYLE"
+                        style={{
+                          width: '100%',
+                          padding: '10px 14px',
+                          borderRadius: '8px',
+                          border: '1.5px solid #ECE4D8',
+                          fontSize: '0.88rem',
+                          color: '#20100A',
+                          background: '#FAF8F5',
+                          outline: 'none',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                        Main Section Heading
+                      </label>
+                      <input
+                        type="text"
+                        value={lifestyleHeading}
+                        onChange={e => setLifestyleHeading(e.target.value)}
+                        placeholder="e.g. Who Is NUTTRYX Crafted For?"
+                        style={{
+                          width: '100%',
+                          padding: '10px 14px',
+                          borderRadius: '8px',
+                          border: '1.5px solid #ECE4D8',
+                          fontSize: '0.88rem',
+                          color: '#20100A',
+                          background: '#FAF8F5',
+                          outline: 'none',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Subheading Description
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={lifestyleDesc}
+                      onChange={e => setLifestyleDesc(e.target.value)}
+                      placeholder="e.g. From high-performance gym workouts to busy laptop desks and school lunchboxes, our pure peanut butter fuels your daily journey."
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.88rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        resize: 'vertical',
+                        boxSizing: 'border-box',
+                        lineHeight: 1.5
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button
+                      type="submit"
+                      disabled={isSavingLifestyleHeader}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 20px',
+                        borderRadius: '8px',
+                        background: 'linear-gradient(135deg, #D9822B 0%, #B8671B 100%)',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        fontWeight: 800,
+                        fontSize: '0.88rem',
+                        cursor: isSavingLifestyleHeader ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 4px 14px rgba(217, 130, 43, 0.35)',
+                        opacity: isSavingLifestyleHeader ? 0.7 : 1
+                      }}
+                    >
+                      {isSavingLifestyleHeader ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                      {isSavingLifestyleHeader ? 'Saving Header...' : 'Save Section Header'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Pillars Cards List */}
+              <div
+                style={{
+                  background: '#FFFFFF',
+                  padding: '24px',
+                  borderRadius: '16px',
+                  border: '1px solid #ECE4D8',
+                  boxShadow: '0 4px 20px rgba(74, 34, 18, 0.05)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '14px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#20100A', margin: 0 }}>
+                      Audience & Lifestyle Cards ({lifestylePillars.length})
+                    </h3>
+                    <p style={{ fontSize: '0.82rem', color: '#736257', margin: '3px 0 0' }}>
+                      Cards highlighting Gym & Athletes, Students, Working Professionals, Kids & Families.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleOpenAddPillar}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 18px',
+                      borderRadius: '8px',
+                      background: '#D9822B',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      fontWeight: 800,
+                      fontSize: '0.88rem',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 14px rgba(217, 130, 43, 0.35)'
+                    }}
+                  >
+                    <Plus size={16} /> Add New Card
+                  </button>
+                </div>
+
+                {/* Cards Grid */}
+                {lifestylePillars.length === 0 ? (
+                  <div
+                    style={{
+                      padding: '40px 20px',
+                      textAlign: 'center',
+                      border: '1px dashed #D6C8BC',
+                      borderRadius: '12px',
+                      background: '#FAF8F5'
+                    }}
+                  >
+                    <Users size={40} style={{ color: '#C2B4A8', margin: '0 auto 10px' }} />
+                    <p style={{ color: '#8A7669', fontSize: '0.9rem', margin: 0 }}>
+                      No lifestyle cards found. Click &quot;Add New Card&quot; to create one.
+                    </p>
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                      gap: '16px'
+                    }}
+                  >
+                    {[...lifestylePillars].sort((a, b) => (a.order || 0) - (b.order || 0)).map((pillar, idx) => (
+                      <div
+                        key={pillar.id || idx}
+                        style={{
+                          background: '#FAF8F5',
+                          borderRadius: '14px',
+                          border: '1.5px solid #ECE4D8',
+                          padding: '20px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          gap: '14px',
+                          opacity: pillar.isActive !== false ? 1 : 0.65,
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div>
+                          {/* Top row: Icon + Order + Status */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                            <div
+                              style={{
+                                width: '40px',
+                                height: '40px',
+                                borderRadius: '10px',
+                                background: '#FFFFFF',
+                                color: '#D9822B',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                              }}
+                            >
+                              <Dumbbell size={20} />
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span
+                                style={{
+                                  fontSize: '0.72rem',
+                                  fontWeight: 700,
+                                  background: '#F5ECE3',
+                                  color: '#4A2212',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px'
+                                }}
+                              >
+                                #{pillar.order || idx + 1}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: '0.72rem',
+                                  fontWeight: 800,
+                                  padding: '2px 8px',
+                                  borderRadius: '6px',
+                                  background: pillar.isActive !== false ? 'rgba(34, 197, 94, 0.12)' : 'rgba(156, 163, 175, 0.15)',
+                                  color: pillar.isActive !== false ? '#15803D' : '#6B7280'
+                                }}
+                              >
+                                {pillar.isActive !== false ? 'Live' : 'Hidden'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Subtitle tag */}
+                          <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#B87024', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>
+                            {pillar.subtitle}
+                          </div>
+
+                          {/* Title */}
+                          <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#20100A', margin: '0 0 8px', lineHeight: 1.35 }}>
+                            {pillar.title}
+                          </h4>
+
+                          {/* Description */}
+                          <p style={{ fontSize: '0.84rem', color: '#5A463B', lineHeight: 1.55, margin: '0 0 12px' }}>
+                            {pillar.desc}
+                          </p>
+
+                          {/* Perk Badge */}
+                          <div
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              color: '#2D6A4F',
+                              background: '#E8F5E9',
+                              padding: '4px 10px',
+                              borderRadius: '99px'
+                            }}
+                          >
+                            <CheckCircle2 size={13} />
+                            <span>{pillar.perk}</span>
+                          </div>
+                        </div>
+
+                        {/* Bottom action bar */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px solid #ECE4D8' }}>
+                          <button
+                            type="button"
+                            title={pillar.isActive !== false ? 'Hide from storefront' : 'Publish to storefront'}
+                            onClick={() => handleTogglePillarStatus(pillar)}
+                            style={{
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              border: '1px solid #ECE4D8',
+                              background: '#FFFFFF',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '5px',
+                              fontSize: '0.78rem',
+                              fontWeight: 700,
+                              color: pillar.isActive !== false ? '#15803D' : '#6B7280'
+                            }}
+                          >
+                            {pillar.isActive !== false ? <Eye size={14} /> : <EyeOff size={14} />}
+                            <span>{pillar.isActive !== false ? 'Active' : 'Hidden'}</span>
+                          </button>
+
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditPillar(pillar)}
+                              style={{
+                                padding: '6px 10px',
+                                borderRadius: '6px',
+                                border: '1px solid #D9822B',
+                                background: 'rgba(217, 130, 43, 0.08)',
+                                color: '#D9822B',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                fontSize: '0.78rem',
+                                fontWeight: 700
+                              }}
+                            >
+                              <Edit3 size={14} />
+                              <span>Edit</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePillar(pillar.id, pillar.title)}
+                              style={{
+                                padding: '6px 8px',
+                                borderRadius: '6px',
+                                border: '1px solid #FCA5A5',
+                                background: '#FEF2F2',
+                                color: '#DC2626',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center'
+                              }}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── TAB: BENEFIT & WHY NUTTRYX COMPARISON ── */}
+          {activeTab === 'benefit' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Header Configuration Card */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, #FFFFFF 0%, #FAF5EE 100%)',
+                  borderRadius: '16px',
+                  border: '1.5px solid #ECE4D8',
+                  padding: '24px 28px',
+                  boxShadow: '0 4px 20px rgba(32, 16, 10, 0.04)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div
+                      style={{
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '10px',
+                        background: 'rgba(217, 130, 43, 0.12)',
+                        color: '#D9822B',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <Award size={22} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '1.18rem', fontWeight: 900, color: '#20100A', margin: 0 }}>
+                        Why NUTTRYX Wins — Comparison Table Header
+                      </h3>
+                      <p style={{ fontSize: '0.82rem', color: '#736257', margin: '2px 0 0 0' }}>
+                        The Clean Label Revolution comparison table headings and trust footer banner
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleSaveBenefitHeader}
+                    disabled={isSavingBenefitHeader}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: 'linear-gradient(135deg, #D9822B 0%, #B8671B 100%)',
+                      color: '#FFFFFF',
+                      padding: '9px 18px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      fontWeight: 800,
+                      fontSize: '0.86rem',
+                      cursor: isSavingBenefitHeader ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 4px 14px rgba(217, 130, 43, 0.35)',
+                      opacity: isSavingBenefitHeader ? 0.7 : 1
+                    }}
+                  >
+                    {isSavingBenefitHeader ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                    {isSavingBenefitHeader ? 'Saving...' : 'Save Header Settings'}
+                  </button>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#4A3B32', marginBottom: '6px' }}>
+                      Badge Text (Golden Pill)
+                    </label>
+                    <input
+                      type="text"
+                      value={benefitBadge}
+                      onChange={(e) => setBenefitBadge(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        border: '1.5px solid #ECE4D8',
+                        background: '#FFFFFF',
+                        fontSize: '0.88rem',
+                        fontWeight: 600,
+                        color: '#20100A',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#4A3B32', marginBottom: '6px' }}>
+                      Main Section Heading
+                    </label>
+                    <input
+                      type="text"
+                      value={benefitHeading}
+                      onChange={(e) => setBenefitHeading(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        border: '1.5px solid #ECE4D8',
+                        background: '#FFFFFF',
+                        fontSize: '0.88rem',
+                        fontWeight: 700,
+                        color: '#20100A',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#4A3B32', marginBottom: '6px' }}>
+                      Section Subtitle / Mission Statement
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={benefitDesc}
+                      onChange={(e) => setBenefitDesc(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        border: '1.5px solid #ECE4D8',
+                        background: '#FFFFFF',
+                        fontSize: '0.86rem',
+                        fontWeight: 500,
+                        color: '#20100A',
+                        outline: 'none',
+                        resize: 'vertical'
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#4A3B32', marginBottom: '6px' }}>
+                      Footer Certification Trust Banner
+                    </label>
+                    <input
+                      type="text"
+                      value={benefitFooterBanner}
+                      onChange={(e) => setBenefitFooterBanner(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        border: '1.5px solid #ECE4D8',
+                        background: '#FFFFFF',
+                        fontSize: '0.86rem',
+                        fontWeight: 600,
+                        color: '#20100A',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Comparison Rows List & Controls */}
+              <div
+                style={{
+                  background: '#FFFFFF',
+                  borderRadius: '16px',
+                  border: '1.5px solid #ECE4D8',
+                  padding: '24px 28px',
+                  boxShadow: '0 4px 20px rgba(32, 16, 10, 0.04)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.18rem', fontWeight: 900, color: '#20100A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      Comparison Parameters & Quality Rows
+                      <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '99px', background: '#D9822B', color: '#FFF' }}>
+                        {benefitRows.length} Rows
+                      </span>
+                    </h3>
+                    <p style={{ fontSize: '0.82rem', color: '#736257', margin: '3px 0 0 0' }}>
+                      Side-by-side comparison between NUTTRYX pure peanut butter and ordinary commercial brands
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={handleOpenAddBenefitRow}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: '#20100A',
+                      color: '#FAF7F2',
+                      padding: '10px 20px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      fontWeight: 800,
+                      fontSize: '0.88rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 4px 12px rgba(32, 16, 10, 0.2)'
+                    }}
+                  >
+                    <Plus size={16} color="#D9822B" /> Add Comparison Row
+                  </button>
+                </div>
+
+                {benefitRows.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '48px 20px', background: '#FAF7F2', borderRadius: '12px', border: '1.5px dashed #D4B99D' }}>
+                    <p style={{ color: '#736257', fontSize: '0.92rem', margin: '0 0 14px 0' }}>No comparison rows created yet.</p>
+                    <button
+                      onClick={handleOpenAddBenefitRow}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: '#D9822B',
+                        color: '#FFF',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Plus size={15} /> Add First Row
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
+                      <thead>
+                        <tr style={{ background: '#20100A', color: '#FAF7F2', fontSize: '0.82rem', letterSpacing: '0.02em' }}>
+                          <th style={{ padding: '12px 16px', borderRadius: '8px 0 0 0', width: '22%' }}>NUTRITIONAL STANDARD</th>
+                          <th style={{ padding: '12px 16px', background: 'rgba(217, 130, 43, 0.25)', color: '#FFD199', width: '38%' }}>
+                            🥜 NUTTRYX PURE PEANUT BUTTER
+                          </th>
+                          <th style={{ padding: '12px 16px', width: '25%', color: '#E8D4C8' }}>ORDINARY COMMERCIAL BRANDS</th>
+                          <th style={{ padding: '12px 16px', textAlign: 'center', width: '8%' }}>STATUS</th>
+                          <th style={{ padding: '12px 16px', borderRadius: '0 8px 0 0', textAlign: 'right', width: '7%' }}>ACTIONS</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {benefitRows.map((row, idx) => (
+                          <tr
+                            key={row.id || `row-${idx}`}
+                            style={{
+                              borderBottom: '1px solid #ECE4D8',
+                              background: idx % 2 === 0 ? '#FFFFFF' : '#FAF7F2',
+                              transition: 'background 0.15s ease'
+                            }}
+                          >
+                            <td style={{ padding: '14px 16px', fontWeight: 800, color: '#20100A', fontSize: '0.88rem' }}>
+                              {row.feature}
+                            </td>
+                            <td style={{ padding: '14px 16px', background: 'rgba(217, 130, 43, 0.05)', fontSize: '0.85rem', fontWeight: 600, color: '#1E3A1A' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '50%', background: '#DEF7EC', color: '#03543F' }}>
+                                  ✓
+                                </span>
+                                <span>{row.nuttryx}</span>
+                              </div>
+                            </td>
+                            <td style={{ padding: '14px 16px', fontSize: '0.84rem', color: '#736257' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '50%', background: '#FDE8E8', color: '#9B1C1C' }}>
+                                  ✕
+                                </span>
+                                <span>{row.regular}</span>
+                              </div>
+                            </td>
+                            <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleBenefitRowStatus(row)}
+                                style={{
+                                  padding: '4px 10px',
+                                  borderRadius: '99px',
+                                  border: 'none',
+                                  background: row.isActive !== false ? '#DEF7EC' : '#F3F4F6',
+                                  color: row.isActive !== false ? '#03543F' : '#6B7280',
+                                  fontSize: '0.74rem',
+                                  fontWeight: 800,
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px'
+                                }}
+                              >
+                                {row.isActive !== false ? <Eye size={12} /> : <EyeOff size={12} />}
+                                {row.isActive !== false ? 'Live' : 'Hidden'}
+                              </button>
+                            </td>
+                            <td style={{ padding: '14px 16px', textAlign: 'right' }}>
+                              <div style={{ display: 'inline-flex', gap: '6px' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditBenefitRow(row)}
+                                  title="Edit Row"
+                                  style={{
+                                    padding: '6px 8px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #ECE4D8',
+                                    background: '#FFFFFF',
+                                    color: '#4A3B32',
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center'
+                                  }}
+                                >
+                                  <Edit3 size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteBenefitRow(row.id, row.feature)}
+                                  title="Delete Row"
+                                  style={{
+                                    padding: '6px 8px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #FCA5A5',
+                                    background: '#FEF2F2',
+                                    color: '#DC2626',
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center'
+                                  }}
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── TAB: CUSTOMER REVIEWS & TESTIMONIALS ── */}
+          {activeTab === 'reviews' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Reviews Summary Stats */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+                <div
+                  style={{
+                    background: '#FFFFFF',
+                    borderRadius: '16px',
+                    border: '1.5px solid #ECE4D8',
+                    padding: '20px 24px',
+                    boxShadow: '0 4px 16px rgba(32, 16, 10, 0.04)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#736257' }}>Total Reviews</span>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(217, 130, 43, 0.12)', color: '#D9822B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <MessageSquareHeart size={18} />
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#20100A' }}>
+                    {reviewsList.length}
+                  </div>
+                  <span style={{ fontSize: '0.74rem', color: '#059669', fontWeight: 700 }}>Real customer experiences</span>
+                </div>
+
+                <div
+                  style={{
+                    background: '#FFFFFF',
+                    borderRadius: '16px',
+                    border: '1.5px solid #ECE4D8',
+                    padding: '20px 24px',
+                    boxShadow: '0 4px 16px rgba(32, 16, 10, 0.04)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#736257' }}>5-Star Ratings</span>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#FEF3C7', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Star size={18} fill="#D97706" />
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#20100A' }}>
+                    {reviewsList.filter(r => r.rating === 5).length}
+                  </div>
+                  <span style={{ fontSize: '0.74rem', color: '#D97706', fontWeight: 700 }}>
+                    {reviewsList.length > 0 ? `${Math.round((reviewsList.filter(r => r.rating === 5).length / reviewsList.length) * 100)}% satisfaction` : '100%'}
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    background: '#FFFFFF',
+                    borderRadius: '16px',
+                    border: '1.5px solid #ECE4D8',
+                    padding: '20px 24px',
+                    boxShadow: '0 4px 16px rgba(32, 16, 10, 0.04)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#736257' }}>Live on Website</span>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#DEF7EC', color: '#03543F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <CheckCircle2 size={18} />
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#20100A' }}>
+                    {reviewsList.filter(r => r.isActive !== false).length}
+                  </div>
+                  <span style={{ fontSize: '0.74rem', color: '#03543F', fontWeight: 700 }}>Visible to shoppers</span>
+                </div>
+              </div>
+
+              {/* Reviews Controls & List */}
+              <div
+                style={{
+                  background: '#FFFFFF',
+                  borderRadius: '16px',
+                  border: '1.5px solid #ECE4D8',
+                  padding: '24px 28px',
+                  boxShadow: '0 4px 20px rgba(32, 16, 10, 0.04)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '240px' }}>
+                    <div style={{ position: 'relative', width: '100%', maxWidth: '340px' }}>
+                      <Search size={16} color="#736257" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                      <input
+                        type="text"
+                        placeholder="Search reviews by name, comment, flavour..."
+                        value={reviewSearchQuery}
+                        onChange={(e) => setReviewSearchQuery(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '9px 12px 9px 36px',
+                          borderRadius: '8px',
+                          border: '1.5px solid #ECE4D8',
+                          fontSize: '0.84rem',
+                          outline: 'none',
+                          color: '#20100A'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleOpenAddReview}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: '#20100A',
+                      color: '#FAF7F2',
+                      padding: '10px 20px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      fontWeight: 800,
+                      fontSize: '0.88rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 4px 12px rgba(32, 16, 10, 0.2)'
+                    }}
+                  >
+                    <Plus size={16} color="#D9822B" /> Add Review
+                  </button>
+                </div>
+
+                {reviewsList.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '48px 20px', background: '#FAF7F2', borderRadius: '12px', border: '1.5px dashed #D4B99D' }}>
+                    <p style={{ color: '#736257', fontSize: '0.92rem', margin: '0 0 14px 0' }}>No reviews found in database.</p>
+                    <button
+                      onClick={handleOpenAddReview}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: '#D9822B',
+                        color: '#FFF',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Plus size={15} /> Add First Review
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+                    {reviewsList
+                      .filter(r => {
+                        if (!reviewSearchQuery.trim()) return true;
+                        const q = reviewSearchQuery.toLowerCase();
+                        return (
+                          (r.name && r.name.toLowerCase().includes(q)) ||
+                          (r.comment && r.comment.toLowerCase().includes(q)) ||
+                          (r.flavour && r.flavour.toLowerCase().includes(q)) ||
+                          (r.role && r.role.toLowerCase().includes(q))
+                        );
+                      })
+                      .map((rev) => (
+                        <div
+                          key={rev.id}
+                          style={{
+                            background: '#FAF7F2',
+                            borderRadius: '14px',
+                            border: '1.5px solid #ECE4D8',
+                            padding: '18px 20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            gap: '12px',
+                            position: 'relative'
+                          }}
+                        >
+                          <div>
+                            {/* Top row: Name, Flavour badge, and Status */}
+                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
+                              <div>
+                                <h4 style={{ fontSize: '0.96rem', fontWeight: 900, color: '#20100A', margin: 0 }}>
+                                  {rev.name}
+                                </h4>
+                                <span style={{ fontSize: '0.76rem', color: '#736257', fontWeight: 600 }}>
+                                  {rev.role}
+                                </span>
+                              </div>
+                              <span
+                                style={{
+                                  fontSize: '0.7rem',
+                                  fontWeight: 800,
+                                  padding: '3px 8px',
+                                  borderRadius: '99px',
+                                  background: rev.isActive !== false ? '#DEF7EC' : '#F3F4F6',
+                                  color: rev.isActive !== false ? '#03543F' : '#6B7280'
+                                }}
+                              >
+                                {rev.isActive !== false ? 'Live' : 'Hidden'}
+                              </span>
+                            </div>
+
+                            {/* Rating and Flavour Pill */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                              <div style={{ display: 'flex', gap: '2px' }}>
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    size={14}
+                                    fill={i < rev.rating ? '#D9822B' : 'transparent'}
+                                    color={i < rev.rating ? '#D9822B' : '#C7B9B0'}
+                                  />
+                                ))}
+                              </div>
+                              {rev.flavour && (
+                                <span style={{ fontSize: '0.72rem', background: '#F3ECE2', color: '#4A3B32', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                                  {rev.flavour}
+                                </span>
+                              )}
+                              {rev.isVerified !== false && (
+                                <span style={{ fontSize: '0.7rem', color: '#059669', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                  <CheckCircle2 size={12} /> Verified
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Comment */}
+                            <p style={{ fontSize: '0.84rem', color: '#3A2E27', lineHeight: 1.5, margin: 0, fontStyle: 'italic' }}>
+                              &ldquo;{rev.comment}&rdquo;
+                            </p>
+                          </div>
+
+                          {/* Footer Actions */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '10px', borderTop: '1px solid #ECE4D8' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleReviewStatus(rev)}
+                              style={{
+                                border: 'none',
+                                background: 'transparent',
+                                color: rev.isActive !== false ? '#059669' : '#6B7280',
+                                fontSize: '0.76rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              {rev.isActive !== false ? <Eye size={13} /> : <EyeOff size={13} />}
+                              {rev.isActive !== false ? 'Active on store' : 'Hidden from store'}
+                            </button>
+
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditReview(rev)}
+                                style={{
+                                  padding: '5px 10px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #ECE4D8',
+                                  background: '#FFFFFF',
+                                  color: '#20100A',
+                                  fontSize: '0.76rem',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px'
+                                }}
+                              >
+                                <Edit3 size={12} color="#D9822B" /> Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteReview(rev.id, rev.name)}
+                                style={{
+                                  padding: '5px 8px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #FCA5A5',
+                                  background: '#FEF2F2',
+                                  color: '#DC2626',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center'
+                                }}
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* ── TAB 7: FACTORY & SUPPORT SETTINGS ── */}
           {activeTab === 'settings' && (
             <div>
@@ -3413,13 +6363,14 @@ export default function AdminDashboard() {
             }}
           >
             <div 
+              className="modal-scrollbar"
               style={{ 
                 background: '#FFFFFF', 
-                padding: '30px', 
-                borderRadius: '20px', 
-                width: '540px', 
+                padding: '28px 30px', 
+                borderRadius: '24px', 
+                width: '560px', 
                 maxWidth: '95%',
-                maxHeight: '92vh',
+                maxHeight: '90vh',
                 overflowY: 'auto',
                 boxShadow: '0 24px 60px rgba(0,0,0,0.25)'
               }}
@@ -4430,13 +7381,16 @@ export default function AdminDashboard() {
             onClick={() => setEditingProduct(null)}
           >
             <div 
+              className="modal-scrollbar"
               style={{
                 background: '#FFFFFF',
                 borderRadius: '24px',
                 width: '100%',
                 maxWidth: '560px',
+                maxHeight: '90vh',
+                overflowY: 'auto',
                 boxShadow: '0 24px 60px rgba(0,0,0,0.3)',
-                padding: '32px',
+                padding: '24px 26px',
                 border: '1.5px solid #E8DDCE',
                 position: 'relative'
               }}
@@ -4446,8 +7400,8 @@ export default function AdminDashboard() {
                 onClick={() => setEditingProduct(null)}
                 style={{
                   position: 'absolute',
-                  top: '18px',
-                  right: '18px',
+                  top: '16px',
+                  right: '16px',
                   background: '#F3ECE2',
                   border: 'none',
                   borderRadius: '50%',
@@ -4462,16 +7416,16 @@ export default function AdminDashboard() {
                 <X size={18} />
               </button>
 
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.35rem', fontWeight: 900, color: '#20100A', marginBottom: '6px' }}>
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 900, color: '#20100A', marginBottom: '4px' }}>
                 Edit Product Details
               </h2>
-              <p style={{ color: '#736257', fontSize: '0.86rem', marginBottom: '22px' }}>
-                Update title, description, category, and pricing.
+              <p style={{ color: '#736257', fontSize: '0.84rem', marginBottom: '14px' }}>
+                Update title, description, category, pricing, and product image.
               </p>
 
               <form onSubmit={handleSaveEditProduct}>
-                <div style={{ marginBottom: '14px' }}>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#20100A', marginBottom: '6px' }}>
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#20100A', marginBottom: '4px' }}>
                     Product Title
                   </label>
                   <input
@@ -4481,17 +7435,17 @@ export default function AdminDashboard() {
                     onChange={(e) => setEditProductName(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '11px 14px',
+                      padding: '9px 12px',
                       borderRadius: '10px',
                       border: '1.5px solid #E4DACD',
                       outline: 'none',
-                      fontSize: '0.9rem'
+                      fontSize: '0.88rem'
                     }}
                   />
                 </div>
 
-                <div style={{ marginBottom: '14px' }}>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#20100A', marginBottom: '6px' }}>
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#20100A', marginBottom: '4px' }}>
                     Subtitle / Taste Notes
                   </label>
                   <input
@@ -4501,18 +7455,18 @@ export default function AdminDashboard() {
                     onChange={(e) => setEditProductSubtitle(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '11px 14px',
+                      padding: '9px 12px',
                       borderRadius: '10px',
                       border: '1.5px solid #E4DACD',
                       outline: 'none',
-                      fontSize: '0.9rem'
+                      fontSize: '0.88rem'
                     }}
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '22px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#20100A', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#20100A', marginBottom: '4px' }}>
                       Category
                     </label>
                     <select
@@ -4520,11 +7474,11 @@ export default function AdminDashboard() {
                       onChange={(e) => setEditProductCategory(e.target.value as any)}
                       style={{
                         width: '100%',
-                        padding: '11px 12px',
+                        padding: '9px 10px',
                         borderRadius: '10px',
                         border: '1.5px solid #E4DACD',
                         outline: 'none',
-                        fontSize: '0.88rem',
+                        fontSize: '0.85rem',
                         background: '#FFFFFF'
                       }}
                     >
@@ -4535,7 +7489,7 @@ export default function AdminDashboard() {
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#20100A', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#20100A', marginBottom: '4px' }}>
                       Price (₹)
                     </label>
                     <input
@@ -4546,17 +7500,17 @@ export default function AdminDashboard() {
                       onChange={(e) => setEditProductPrice(Number(e.target.value))}
                       style={{
                         width: '100%',
-                        padding: '11px 12px',
+                        padding: '9px 10px',
                         borderRadius: '10px',
                         border: '1.5px solid #E4DACD',
                         outline: 'none',
-                        fontSize: '0.9rem'
+                        fontSize: '0.88rem'
                       }}
                     />
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#20100A', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#20100A', marginBottom: '4px' }}>
                       Weight / Size
                     </label>
                     <input
@@ -4566,14 +7520,172 @@ export default function AdminDashboard() {
                       onChange={(e) => setEditProductWeight(e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '11px 12px',
+                        padding: '9px 10px',
                         borderRadius: '10px',
                         border: '1.5px solid #E4DACD',
                         outline: 'none',
-                        fontSize: '0.9rem'
+                        fontSize: '0.88rem'
                       }}
                     />
                   </div>
+                </div>
+
+                {/* ── Product Image: Only Current Product's Image & Edit Controls ── */}
+                <div style={{ marginBottom: '14px', borderTop: '1px solid #F0E8DD', paddingTop: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
+                    <label style={{ fontSize: '0.82rem', fontWeight: 800, color: '#20100A' }}>
+                      Product Jar Image
+                    </label>
+                    <span 
+                      style={{ 
+                        fontSize: '0.7rem', 
+                        fontWeight: 700, 
+                        color: '#B55A00', 
+                        background: '#FFF3E0', 
+                        padding: '2px 8px', 
+                        borderRadius: '4px',
+                        border: '1px solid #FFE0B2'
+                      }}
+                    >
+                      📐 Recommended: 800 × 800 px (Square)
+                    </span>
+                  </div>
+
+                  {/* Current Product Image Card (Only shows the image of the product being edited) */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: '#F8F4EE', borderRadius: '12px', border: '1.5px solid #EADBCC', marginBottom: '10px' }}>
+                    <div style={{ width: '52px', height: '52px', borderRadius: '8px', overflow: 'hidden', background: '#FFFFFF', border: '1.5px solid #D8C7B5', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <img 
+                        src={editProductImage || editingProduct.image} 
+                        alt={editingProduct.name} 
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/images/creamy-peanut-butter.jpg';
+                        }}
+                      />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#20100A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {editingProduct.name}
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: '#736257', marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {editProductImage.startsWith('data:') ? 'Custom uploaded image file' : editProductImage}
+                      </div>
+                    </div>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#2E7D32', background: '#E8F5E9', padding: '3px 7px', borderRadius: '6px' }}>
+                      Active Image
+                    </span>
+                  </div>
+
+                  {/* Mode Toggles: Only 2 options (Upload Image / Image URL Link) */}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setEditImageInputMode('upload')}
+                      style={{
+                        flex: 1,
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        border: editImageInputMode === 'upload' ? '1.5px solid #20100A' : '1px solid #ECE2D5',
+                        background: editImageInputMode === 'upload' ? '#20100A' : '#FAF7F2',
+                        color: editImageInputMode === 'upload' ? '#FFFFFF' : '#5C4A3E',
+                        fontSize: '0.76rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <Upload size={13} />
+                      <span>Upload New Image</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setEditImageInputMode('url')}
+                      style={{
+                        flex: 1,
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        border: editImageInputMode === 'url' ? '1.5px solid #20100A' : '1px solid #ECE2D5',
+                        background: editImageInputMode === 'url' ? '#20100A' : '#FAF7F2',
+                        color: editImageInputMode === 'url' ? '#FFFFFF' : '#5C4A3E',
+                        fontSize: '0.76rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <LinkIcon size={13} />
+                      <span>Image URL Link</span>
+                    </button>
+                  </div>
+
+                  {/* Option 1: File Upload */}
+                  {editImageInputMode === 'upload' && (
+                    <div
+                      style={{
+                        border: '2px dashed #D9822B',
+                        borderRadius: '12px',
+                        padding: '14px 12px',
+                        textAlign: 'center',
+                        background: '#FDF9F5',
+                        position: 'relative',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.15s ease'
+                      }}
+                    >
+                      <input 
+                        type="file"
+                        accept="image/*"
+                        onChange={handleEditProductImageUpload}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          opacity: 0,
+                          cursor: 'pointer',
+                          zIndex: 2
+                        }}
+                      />
+                      <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#F5EAE0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 4px' }}>
+                        <Upload size={15} color="#D9822B" />
+                      </div>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#20100A' }}>
+                        {editUploadFileName ? `Selected: ${editUploadFileName}` : 'Click or Drag to Upload New Product Image'}
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: '#736257', marginTop: '2px' }}>
+                        Supports JPG, PNG, WebP (Max 5MB)
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Option 2: Image URL */}
+                  {editImageInputMode === 'url' && (
+                    <div>
+                      <div style={{ position: 'relative' }}>
+                        <LinkIcon size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#8A7669' }} />
+                        <input 
+                          type="text" 
+                          placeholder="Paste image URL (e.g. https://... or /images/...)"
+                          value={editProductImage}
+                          onChange={(e) => setEditProductImage(e.target.value)}
+                          style={{ width: '100%', padding: '9px 12px 9px 34px', borderRadius: '10px', border: '1.5px solid #ECE4D8', fontSize: '0.85rem', outline: 'none' }}
+                        />
+                      </div>
+                      <p style={{ fontSize: '0.7rem', color: '#736257', marginTop: '4px' }}>
+                        Direct hosted link ya local path paste karein.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
@@ -4720,6 +7832,1514 @@ export default function AdminDashboard() {
                 </button>
               </div>
 
+            </div>
+          </div>
+        )}
+
+        {/* ── Modal: Add / Edit FAQ Question ── */}
+        {isFaqModalOpen && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(32, 16, 10, 0.65)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '16px'
+            }}
+            onClick={() => setIsFaqModalOpen(false)}
+          >
+            <div
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '18px',
+                width: '100%',
+                maxWidth: '620px',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
+                padding: '28px',
+                border: '1px solid #ECE4D8'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '20px',
+                  paddingBottom: '14px',
+                  borderBottom: '1.5px solid #F5ECE3'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: 'rgba(217, 130, 43, 0.12)',
+                      color: '#D9822B',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <HelpCircle size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#20100A', margin: 0 }}>
+                      {editingFaq ? 'Edit FAQ Question' : 'Add New FAQ Question'}
+                    </h3>
+                    <p style={{ fontSize: '0.8rem', color: '#8A7669', margin: '2px 0 0' }}>
+                      {editingFaq ? `Editing FAQ #${editingFaq.order || 1}` : 'Provide a clear question and informative answer'}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsFaqModalOpen(false)}
+                  style={{
+                    background: '#F5ECE3',
+                    border: 'none',
+                    borderRadius: '8px',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#736257'
+                  }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSaveFaq} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                {/* Question input */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                    Question Title <span style={{ color: '#D9822B' }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={faqFormQuestion}
+                    onChange={e => setFaqFormQuestion(e.target.value)}
+                    placeholder="e.g. Why does oil float on top of natural peanut butter?"
+                    style={{
+                      width: '100%',
+                      padding: '12px 14px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #ECE4D8',
+                      fontSize: '0.92rem',
+                      color: '#20100A',
+                      background: '#FAF8F5',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                {/* Answer textarea */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                    Answer Description <span style={{ color: '#D9822B' }}>*</span>
+                  </label>
+                  <textarea
+                    required
+                    rows={5}
+                    value={faqFormAnswer}
+                    onChange={e => setFaqFormAnswer(e.target.value)}
+                    placeholder="Enter detailed and transparent customer answer here..."
+                    style={{
+                      width: '100%',
+                      padding: '12px 14px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #ECE4D8',
+                      fontSize: '0.92rem',
+                      color: '#20100A',
+                      background: '#FAF8F5',
+                      outline: 'none',
+                      resize: 'vertical',
+                      boxSizing: 'border-box',
+                      lineHeight: 1.55
+                    }}
+                  />
+                </div>
+
+                {/* Row: Category + Order */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Category
+                    </label>
+                    <select
+                      value={faqFormCategory}
+                      onChange={e => setFaqFormCategory(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '11px 12px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.88rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="Purity & Quality">Purity & Quality</option>
+                      <option value="Diet & Health">Diet & Health</option>
+                      <option value="Storage & Freshness">Storage & Freshness</option>
+                      <option value="Samples & Orders">Samples & Orders</option>
+                      <option value="General">General</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Display Order #
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={faqFormOrder}
+                      onChange={e => setFaqFormOrder(Number(e.target.value) || 1)}
+                      style={{
+                        width: '100%',
+                        padding: '11px 12px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.88rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Toggle: Active status */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px 14px',
+                    borderRadius: '10px',
+                    background: '#FAF8F5',
+                    border: '1px solid #ECE4D8',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => setFaqFormIsActive(!faqFormIsActive)}
+                >
+                  <input
+                    type="checkbox"
+                    id="faqActiveToggle"
+                    checked={faqFormIsActive}
+                    onChange={e => setFaqFormIsActive(e.target.checked)}
+                    style={{ width: '18px', height: '18px', accentColor: '#D9822B', cursor: 'pointer' }}
+                  />
+                  <label htmlFor="faqActiveToggle" style={{ fontSize: '0.88rem', fontWeight: 700, color: '#20100A', cursor: 'pointer' }}>
+                    Publish to store website (Visible to customers)
+                  </label>
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsFaqModalOpen(false)}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #ECE4D8',
+                      background: '#FFFFFF',
+                      fontWeight: 700,
+                      color: '#4A3B32',
+                      fontSize: '0.9rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSavingFaq}
+                    style={{
+                      flex: 2,
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #D9822B 0%, #B8671B 100%)',
+                      fontWeight: 800,
+                      color: '#FFFFFF',
+                      fontSize: '0.92rem',
+                      cursor: isSavingFaq ? 'not-allowed' : 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 14px rgba(217, 130, 43, 0.35)',
+                      opacity: isSavingFaq ? 0.7 : 1
+                    }}
+                  >
+                    {isSavingFaq && <Loader2 size={18} className="animate-spin" />}
+                    {isSavingFaq ? 'Saving...' : editingFaq ? 'Update Question' : '✓ Add Question'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ── Modal: Add / Edit Craft Step ── */}
+        {isCraftStepModalOpen && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(32, 16, 10, 0.65)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '16px'
+            }}
+            onClick={() => setIsCraftStepModalOpen(false)}
+          >
+            <div
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '18px',
+                width: '100%',
+                maxWidth: '620px',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
+                padding: '28px',
+                border: '1px solid #ECE4D8'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '20px',
+                  paddingBottom: '14px',
+                  borderBottom: '1.5px solid #F5ECE3'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: 'rgba(217, 130, 43, 0.12)',
+                      color: '#D9822B',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <ShieldCheck size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#20100A', margin: 0 }}>
+                      {editingCraftStep ? `Edit Step ${editingCraftStep.num}` : 'Add New Craft Step'}
+                    </h3>
+                    <p style={{ fontSize: '0.8rem', color: '#8A7669', margin: '2px 0 0' }}>
+                      {editingCraftStep ? `Update "${editingCraftStep.title}"` : 'Create a new process highlight card for the storefront'}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsCraftStepModalOpen(false)}
+                  style={{
+                    background: '#F5ECE3',
+                    border: 'none',
+                    borderRadius: '8px',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#736257'
+                  }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSaveCraftStep} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                {/* Step Number + Title */}
+                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '14px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Step # <span style={{ color: '#D9822B' }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={stepFormNum}
+                      onChange={e => setStepFormNum(e.target.value)}
+                      placeholder="e.g. 01"
+                      style={{
+                        width: '100%',
+                        padding: '11px 12px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.92rem',
+                        fontWeight: 800,
+                        color: '#D9822B',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Step Title <span style={{ color: '#D9822B' }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={stepFormTitle}
+                      onChange={e => setStepFormTitle(e.target.value)}
+                      placeholder="e.g. Ethical Sourcing"
+                      style={{
+                        width: '100%',
+                        padding: '11px 14px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.92rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Subtitle tag + Icon selector */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Subtitle / Location Tag
+                    </label>
+                    <input
+                      type="text"
+                      value={stepFormSubtitle}
+                      onChange={e => setStepFormSubtitle(e.target.value)}
+                      placeholder="e.g. SAURASHTRA, GUJARAT"
+                      style={{
+                        width: '100%',
+                        padding: '11px 12px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.88rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Card Icon
+                    </label>
+                    <select
+                      value={stepFormIcon}
+                      onChange={e => setStepFormIcon(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '11px 12px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.88rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="Sparkles">✨ Sparkles (Purity / Ethical)</option>
+                      <option value="Flame">🔥 Flame (Hot-Air Roasting)</option>
+                      <option value="Cpu">⚙️ Stone Mill / Grinding</option>
+                      <option value="PackageCheck">📦 Package / Jarring</option>
+                      <option value="ShieldCheck">🛡️ Shield (Quality Guarantee)</option>
+                      <option value="Award">🏆 Award (Premium Gold)</option>
+                      <option value="Heart">❤️ Heart (Healthy Nutrition)</option>
+                      <option value="Zap">⚡ Zap (High Energy)</option>
+                      <option value="Leaf">🌿 Leaf (100% Vegan / Organic)</option>
+                      <option value="Truck">🚚 Truck (Fast Dispatch)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                    Process Description <span style={{ color: '#D9822B' }}>*</span>
+                  </label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={stepFormDesc}
+                    onChange={e => setStepFormDesc(e.target.value)}
+                    placeholder="Describe how this step takes place and why it makes NUTTRYX superior..."
+                    style={{
+                      width: '100%',
+                      padding: '12px 14px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #ECE4D8',
+                      fontSize: '0.9rem',
+                      color: '#20100A',
+                      background: '#FAF8F5',
+                      outline: 'none',
+                      resize: 'vertical',
+                      boxSizing: 'border-box',
+                      lineHeight: 1.55
+                    }}
+                  />
+                </div>
+
+                {/* Row: Order + Active toggle */}
+                <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '14px', alignItems: 'center' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Sort Order #
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={stepFormOrder}
+                      onChange={e => setStepFormOrder(Number(e.target.value) || 1)}
+                      style={{
+                        width: '100%',
+                        padding: '11px 12px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.88rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '11px 14px',
+                      borderRadius: '10px',
+                      background: '#FAF8F5',
+                      border: '1px solid #ECE4D8',
+                      cursor: 'pointer',
+                      marginTop: '22px'
+                    }}
+                    onClick={() => setStepFormIsActive(!stepFormIsActive)}
+                  >
+                    <input
+                      type="checkbox"
+                      id="stepActiveToggle"
+                      checked={stepFormIsActive}
+                      onChange={e => setStepFormIsActive(e.target.checked)}
+                      style={{ width: '18px', height: '18px', accentColor: '#D9822B', cursor: 'pointer' }}
+                    />
+                    <label htmlFor="stepActiveToggle" style={{ fontSize: '0.85rem', fontWeight: 700, color: '#20100A', cursor: 'pointer' }}>
+                      Show on Storefront
+                    </label>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsCraftStepModalOpen(false)}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #ECE4D8',
+                      background: '#FFFFFF',
+                      fontWeight: 700,
+                      color: '#4A3B32',
+                      fontSize: '0.9rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSavingCraftStep}
+                    style={{
+                      flex: 2,
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #D9822B 0%, #B8671B 100%)',
+                      fontWeight: 800,
+                      color: '#FFFFFF',
+                      fontSize: '0.92rem',
+                      cursor: isSavingCraftStep ? 'not-allowed' : 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 14px rgba(217, 130, 43, 0.35)',
+                      opacity: isSavingCraftStep ? 0.7 : 1
+                    }}
+                  >
+                    {isSavingCraftStep && <Loader2 size={18} className="animate-spin" />}
+                    {isSavingCraftStep ? 'Saving...' : editingCraftStep ? 'Update Step' : '✓ Add Step'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ── Modal: Add / Edit Lifestyle Pillar ── */}
+        {isPillarModalOpen && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(32, 16, 10, 0.65)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '16px'
+            }}
+            onClick={() => setIsPillarModalOpen(false)}
+          >
+            <div
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '18px',
+                width: '100%',
+                maxWidth: '620px',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
+                padding: '28px',
+                border: '1px solid #ECE4D8'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '20px',
+                  paddingBottom: '14px',
+                  borderBottom: '1.5px solid #F5ECE3'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: 'rgba(217, 130, 43, 0.12)',
+                      color: '#D9822B',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <Users size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#20100A', margin: 0 }}>
+                      {editingPillar ? `Edit Card: ${editingPillar.title}` : 'Add New Lifestyle Card'}
+                    </h3>
+                    <p style={{ fontSize: '0.8rem', color: '#8A7669', margin: '2px 0 0' }}>
+                      {editingPillar ? 'Modify audience messaging and key benefit' : 'Create a new lifestyle audience card'}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsPillarModalOpen(false)}
+                  style={{
+                    background: '#F5ECE3',
+                    border: 'none',
+                    borderRadius: '8px',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#736257'
+                  }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSavePillar} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                {/* Title + Subtitle / Audience tag */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Card Title <span style={{ color: '#D9822B' }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={pillarFormTitle}
+                      onChange={e => setPillarFormTitle(e.target.value)}
+                      placeholder="e.g. Supports Fitness"
+                      style={{
+                        width: '100%',
+                        padding: '11px 14px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.92rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Audience Tag / Subtitle
+                    </label>
+                    <input
+                      type="text"
+                      value={pillarFormSubtitle}
+                      onChange={e => setPillarFormSubtitle(e.target.value)}
+                      placeholder="e.g. GYM & ATHLETES"
+                      style={{
+                        width: '100%',
+                        padding: '11px 14px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.92rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Icon Selector + Perk Benefit */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Icon
+                    </label>
+                    <select
+                      value={pillarFormIcon}
+                      onChange={e => setPillarFormIcon(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '11px 12px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.88rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="Dumbbell">🏋️ Dumbbell (Gym & Athletes)</option>
+                      <option value="GraduationCap">🎓 Graduation Cap (Students)</option>
+                      <option value="Laptop">💻 Laptop (Working Professionals)</option>
+                      <option value="Users">👨‍👩‍👧‍👦 Users (Kids & Parents)</option>
+                      <option value="Heart">❤️ Heart (Health & Wellness)</option>
+                      <option value="Zap">⚡ Zap (High Energy)</option>
+                      <option value="ShieldCheck">🛡️ Shield (Purity / Safety)</option>
+                      <option value="Award">🏆 Award (Excellence)</option>
+                      <option value="Sparkles">✨ Sparkles (Active Lifestyle)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Benefit Tag Perk (Green Pill)
+                    </label>
+                    <input
+                      type="text"
+                      value={pillarFormPerk}
+                      onChange={e => setPillarFormPerk(e.target.value)}
+                      placeholder="e.g. Ideal pre/post workout fuel"
+                      style={{
+                        width: '100%',
+                        padding: '11px 14px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.88rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                    Card Description <span style={{ color: '#D9822B' }}>*</span>
+                  </label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={pillarFormDesc}
+                    onChange={e => setPillarFormDesc(e.target.value)}
+                    placeholder="Describe how NUTTRYX pure peanut butter benefits this specific lifestyle audience..."
+                    style={{
+                      width: '100%',
+                      padding: '12px 14px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #ECE4D8',
+                      fontSize: '0.9rem',
+                      color: '#20100A',
+                      background: '#FAF8F5',
+                      outline: 'none',
+                      resize: 'vertical',
+                      boxSizing: 'border-box',
+                      lineHeight: 1.55
+                    }}
+                  />
+                </div>
+
+                {/* Row: Order + Active toggle */}
+                <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '14px', alignItems: 'center' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Sort Order #
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={pillarFormOrder}
+                      onChange={e => setPillarFormOrder(Number(e.target.value) || 1)}
+                      style={{
+                        width: '100%',
+                        padding: '11px 12px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.88rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '11px 14px',
+                      borderRadius: '10px',
+                      background: '#FAF8F5',
+                      border: '1px solid #ECE4D8',
+                      cursor: 'pointer',
+                      marginTop: '22px'
+                    }}
+                    onClick={() => setPillarFormIsActive(!pillarFormIsActive)}
+                  >
+                    <input
+                      type="checkbox"
+                      id="pillarActiveToggle"
+                      checked={pillarFormIsActive}
+                      onChange={e => setPillarFormIsActive(e.target.checked)}
+                      style={{ width: '18px', height: '18px', accentColor: '#D9822B', cursor: 'pointer' }}
+                    />
+                    <label htmlFor="pillarActiveToggle" style={{ fontSize: '0.85rem', fontWeight: 700, color: '#20100A', cursor: 'pointer' }}>
+                      Show on Storefront
+                    </label>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsPillarModalOpen(false)}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #ECE4D8',
+                      background: '#FFFFFF',
+                      fontWeight: 700,
+                      color: '#4A3B32',
+                      fontSize: '0.9rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSavingPillar}
+                    style={{
+                      flex: 2,
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #D9822B 0%, #B8671B 100%)',
+                      fontWeight: 800,
+                      color: '#FFFFFF',
+                      fontSize: '0.92rem',
+                      cursor: isSavingPillar ? 'not-allowed' : 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 14px rgba(217, 130, 43, 0.35)',
+                      opacity: isSavingPillar ? 0.7 : 1
+                    }}
+                  >
+                    {isSavingPillar && <Loader2 size={18} className="animate-spin" />}
+                    {isSavingPillar ? 'Saving...' : editingPillar ? 'Update Card' : '✓ Add Card'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ── MODAL: ADD / EDIT BENEFIT COMPARISON ROW ── */}
+        {isBenefitModalOpen && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(26, 13, 7, 0.72)',
+              backdropFilter: 'blur(6px)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px'
+            }}
+            onClick={() => setIsBenefitModalOpen(false)}
+          >
+            <div
+              className="modal-scrollbar"
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '24px',
+                width: '100%',
+                maxWidth: '560px',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                boxShadow: '0 24px 60px rgba(0,0,0,0.3)',
+                padding: '28px',
+                border: '1.5px solid #E8DDCE',
+                position: 'relative'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '10px',
+                      background: 'rgba(217, 130, 43, 0.12)',
+                      color: '#D9822B',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <Award size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#20100A', margin: 0 }}>
+                      {editingBenefitRow ? `Edit Parameter: ${editingBenefitRow.feature}` : 'Add Comparison Parameter'}
+                    </h3>
+                    <p style={{ fontSize: '0.8rem', color: '#8A7669', margin: '2px 0 0' }}>
+                      {editingBenefitRow ? 'Modify NUTTRYX pure standard vs ordinary brands' : 'Create a new comparison row for the table'}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsBenefitModalOpen(false)}
+                  style={{
+                    background: '#F5ECE3',
+                    border: 'none',
+                    borderRadius: '8px',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#736257'
+                  }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSaveBenefitRow} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                    Parameter / Standard Name <span style={{ color: '#D9822B' }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={benefitFormFeature}
+                    onChange={(e) => setBenefitFormFeature(e.target.value)}
+                    placeholder="e.g. Peanut Quality & Sourcing"
+                    style={{
+                      width: '100%',
+                      padding: '11px 14px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #ECE4D8',
+                      fontSize: '0.92rem',
+                      color: '#20100A',
+                      background: '#FAF8F5',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#1E3A1A', marginBottom: '6px' }}>
+                    🥜 NUTTRYX Pure Peanut Butter Standard <span style={{ color: '#059669' }}>*</span>
+                  </label>
+                  <textarea
+                    rows={2}
+                    required
+                    value={benefitFormNuttryx}
+                    onChange={(e) => setBenefitFormNuttryx(e.target.value)}
+                    placeholder="e.g. 100% Saurashtra Jumbo Bold Peanuts (Grade A)"
+                    style={{
+                      width: '100%',
+                      padding: '11px 14px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #A7F3D0',
+                      fontSize: '0.88rem',
+                      color: '#064E3B',
+                      background: '#F0FDF4',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      resize: 'vertical'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#991B1B', marginBottom: '6px' }}>
+                    ⚠️ Ordinary Commercial Brands Standard <span style={{ color: '#DC2626' }}>*</span>
+                  </label>
+                  <textarea
+                    rows={2}
+                    required
+                    value={benefitFormRegular}
+                    onChange={(e) => setBenefitFormRegular(e.target.value)}
+                    placeholder="e.g. Unspecified split & low-grade bulk peanuts"
+                    style={{
+                      width: '100%',
+                      padding: '11px 14px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #FECACA',
+                      fontSize: '0.88rem',
+                      color: '#7F1D1D',
+                      background: '#FEF2F2',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      resize: 'vertical'
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', alignItems: 'center' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Sort Order #
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={benefitFormOrder}
+                      onChange={(e) => setBenefitFormOrder(Number(e.target.value) || 1)}
+                      style={{
+                        width: '100%',
+                        padding: '11px 12px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.88rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '11px 14px',
+                      borderRadius: '10px',
+                      background: '#FAF8F5',
+                      border: '1px solid #ECE4D8',
+                      cursor: 'pointer',
+                      marginTop: '22px'
+                    }}
+                    onClick={() => setBenefitFormIsActive(!benefitFormIsActive)}
+                  >
+                    <input
+                      type="checkbox"
+                      id="benefitActiveToggle"
+                      checked={benefitFormIsActive}
+                      onChange={(e) => setBenefitFormIsActive(e.target.checked)}
+                      style={{ width: '18px', height: '18px', accentColor: '#D9822B', cursor: 'pointer' }}
+                    />
+                    <label htmlFor="benefitActiveToggle" style={{ fontSize: '0.85rem', fontWeight: 700, color: '#20100A', cursor: 'pointer' }}>
+                      Show on Storefront
+                    </label>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsBenefitModalOpen(false)}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #ECE4D8',
+                      background: '#FFFFFF',
+                      fontWeight: 700,
+                      color: '#4A3B32',
+                      fontSize: '0.9rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSavingBenefitRow}
+                    style={{
+                      flex: 2,
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #D9822B 0%, #B8671B 100%)',
+                      fontWeight: 800,
+                      color: '#FFFFFF',
+                      fontSize: '0.92rem',
+                      cursor: isSavingBenefitRow ? 'not-allowed' : 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 14px rgba(217, 130, 43, 0.35)',
+                      opacity: isSavingBenefitRow ? 0.7 : 1
+                    }}
+                  >
+                    {isSavingBenefitRow && <Loader2 size={18} className="animate-spin" />}
+                    {isSavingBenefitRow ? 'Saving...' : editingBenefitRow ? 'Update Parameter' : '✓ Add Parameter'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ── MODAL: ADD / EDIT CUSTOMER REVIEW ── */}
+        {isReviewModalOpen && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(26, 13, 7, 0.72)',
+              backdropFilter: 'blur(6px)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px'
+            }}
+            onClick={() => setIsReviewModalOpen(false)}
+          >
+            <div
+              className="modal-scrollbar"
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '24px',
+                width: '100%',
+                maxWidth: '560px',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                boxShadow: '0 24px 60px rgba(0,0,0,0.3)',
+                padding: '28px',
+                border: '1.5px solid #E8DDCE',
+                position: 'relative'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '10px',
+                      background: 'rgba(217, 130, 43, 0.12)',
+                      color: '#D9822B',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <MessageSquareHeart size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#20100A', margin: 0 }}>
+                      {editingReview ? `Edit Review: ${editingReview.name}` : 'Add New Customer Review'}
+                    </h3>
+                    <p style={{ fontSize: '0.8rem', color: '#8A7669', margin: '2px 0 0' }}>
+                      {editingReview ? 'Modify rating, testimonial quote, or reviewer title' : 'Manually add a verified customer review'}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsReviewModalOpen(false)}
+                  style={{
+                    background: '#F5ECE3',
+                    border: 'none',
+                    borderRadius: '8px',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#736257'
+                  }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSaveReview} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Customer Name <span style={{ color: '#D9822B' }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={reviewFormName}
+                      onChange={(e) => setReviewFormName(e.target.value)}
+                      placeholder="e.g. Aman Sharma"
+                      style={{
+                        width: '100%',
+                        padding: '11px 14px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.92rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Role / Location
+                    </label>
+                    <input
+                      type="text"
+                      value={reviewFormRole}
+                      onChange={(e) => setReviewFormRole(e.target.value)}
+                      placeholder="e.g. Fitness Coach, Mumbai"
+                      style={{
+                        width: '100%',
+                        padding: '11px 14px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.92rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Star Rating
+                    </label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingTop: '4px' }}>
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setReviewFormRating(s)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '4px',
+                            display: 'flex',
+                            alignItems: 'center'
+                          }}
+                        >
+                          <Star
+                            size={24}
+                            fill={s <= reviewFormRating ? '#D9822B' : 'transparent'}
+                            color={s <= reviewFormRating ? '#D9822B' : '#C7B9B0'}
+                          />
+                        </button>
+                      ))}
+                      <span style={{ fontSize: '0.84rem', fontWeight: 800, color: '#D9822B', marginLeft: '6px' }}>
+                        {reviewFormRating} Stars
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                      Flavour Purchased
+                    </label>
+                    <select
+                      value={reviewFormFlavour}
+                      onChange={(e) => setReviewFormFlavour(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '11px 14px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #ECE4D8',
+                        fontSize: '0.88rem',
+                        color: '#20100A',
+                        background: '#FAF8F5',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="Dark Chocolate Peanut Butter">Dark Chocolate Peanut Butter</option>
+                      <option value="Natural Creamy Peanut Butter">Natural Creamy Peanut Butter</option>
+                      <option value="Roasted Crunchy Peanut Butter">Roasted Crunchy Peanut Butter</option>
+                      <option value="Trio Discovery Bundle">Trio Discovery Bundle</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#3A2016', marginBottom: '6px' }}>
+                    Customer Review & Feedback <span style={{ color: '#D9822B' }}>*</span>
+                  </label>
+                  <textarea
+                    rows={4}
+                    required
+                    value={reviewFormComment}
+                    onChange={(e) => setReviewFormComment(e.target.value)}
+                    placeholder="Customer's genuine feedback and experience with NUTTRYX peanut butter..."
+                    style={{
+                      width: '100%',
+                      padding: '11px 14px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #ECE4D8',
+                      fontSize: '0.88rem',
+                      color: '#20100A',
+                      background: '#FAF8F5',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      resize: 'vertical',
+                      lineHeight: 1.5
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '11px 14px',
+                      borderRadius: '10px',
+                      background: '#FAF8F5',
+                      border: '1px solid #ECE4D8',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => setReviewFormIsVerified(!reviewFormIsVerified)}
+                  >
+                    <input
+                      type="checkbox"
+                      id="reviewVerifiedToggle"
+                      checked={reviewFormIsVerified}
+                      onChange={(e) => setReviewFormIsVerified(e.target.checked)}
+                      style={{ width: '18px', height: '18px', accentColor: '#059669', cursor: 'pointer' }}
+                    />
+                    <label htmlFor="reviewVerifiedToggle" style={{ fontSize: '0.85rem', fontWeight: 700, color: '#20100A', cursor: 'pointer' }}>
+                      Verified Buyer Badge
+                    </label>
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '11px 14px',
+                      borderRadius: '10px',
+                      background: '#FAF8F5',
+                      border: '1px solid #ECE4D8',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => setReviewFormIsActive(!reviewFormIsActive)}
+                  >
+                    <input
+                      type="checkbox"
+                      id="reviewActiveToggle"
+                      checked={reviewFormIsActive}
+                      onChange={(e) => setReviewFormIsActive(e.target.checked)}
+                      style={{ width: '18px', height: '18px', accentColor: '#D9822B', cursor: 'pointer' }}
+                    />
+                    <label htmlFor="reviewActiveToggle" style={{ fontSize: '0.85rem', fontWeight: 700, color: '#20100A', cursor: 'pointer' }}>
+                      Show on Storefront
+                    </label>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsReviewModalOpen(false)}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #ECE4D8',
+                      background: '#FFFFFF',
+                      fontWeight: 700,
+                      color: '#4A3B32',
+                      fontSize: '0.9rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSavingReview}
+                    style={{
+                      flex: 2,
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #D9822B 0%, #B8671B 100%)',
+                      fontWeight: 800,
+                      color: '#FFFFFF',
+                      fontSize: '0.92rem',
+                      cursor: isSavingReview ? 'not-allowed' : 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 14px rgba(217, 130, 43, 0.35)',
+                      opacity: isSavingReview ? 0.7 : 1
+                    }}
+                  >
+                    {isSavingReview && <Loader2 size={18} className="animate-spin" />}
+                    {isSavingReview ? 'Saving...' : editingReview ? 'Update Review' : '✓ Add Review'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

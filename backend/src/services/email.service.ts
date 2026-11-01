@@ -199,6 +199,76 @@ export class EmailService {
 
     return true;
   }
+
+  async sendPasswordResetOtpEmail(to: string, otp: string, recipientName: string = 'Customer'): Promise<boolean> {
+    const from = process.env.EMAIL_FROM || '"NUTTRYX Foods" <support@nuttryx.com>';
+    const subject = `🔐 ${otp} is your NUTTRYX Password Reset OTP`;
+
+    const html = `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 580px; margin: 0 auto; background: #1C120C; border: 1px solid rgba(229, 131, 45, 0.3); border-radius: 20px; overflow: hidden; color: #FAF7F2; box-shadow: 0 16px 36px rgba(0,0,0,0.5);">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #180D07 0%, #29150B 100%); padding: 32px 24px; text-align: center; border-bottom: 1px solid rgba(229, 131, 45, 0.2);">
+          <div style="display: inline-block; width: 44px; height: 44px; border-radius: 50%; background: rgba(229, 131, 45, 0.15); border: 1px solid rgba(229, 131, 45, 0.4); line-height: 44px; font-size: 20px; margin-bottom: 12px;">🥜</div>
+          <h1 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 2px; color: #FAF7F2;">NUTTRYX<span style="color: #E5832D;">™</span></h1>
+          <p style="margin: 6px 0 0; font-size: 13px; color: #A8988C; letter-spacing: 0.5px;">Healthy Nutrition, Better You</p>
+        </div>
+
+        <!-- Body -->
+        <div style="padding: 32px 28px; background: #20130C;">
+          <h2 style="margin: 0 0 12px; font-size: 18px; color: #FAF7F2; font-weight: 700;">Password Reset Request</h2>
+          <p style="margin: 0 0 20px; font-size: 14px; line-height: 1.6; color: #C4B5A5;">
+            Hello <strong style="color: #FAF7F2;">${recipientName}</strong>,<br>
+            We received a request to reset your password. Use the following 6-digit One-Time Password (OTP) to proceed with resetting your password:
+          </p>
+
+          <!-- OTP Box -->
+          <div style="background: rgba(229, 131, 45, 0.1); border: 2px dashed #E5832D; border-radius: 14px; padding: 20px; text-align: center; margin: 24px 0;">
+            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #E5832D; font-weight: 700; margin-bottom: 8px;">Your Verification Code</div>
+            <div style="font-size: 34px; font-weight: 800; letter-spacing: 10px; color: #FFFFFF; font-family: 'Courier New', Courier, monospace; text-shadow: 0 2px 10px rgba(229, 131, 45, 0.4);">${otp}</div>
+            <div style="font-size: 12px; color: #A8988C; margin-top: 8px;">⏱️ Valid for <strong>10 minutes</strong> only</div>
+          </div>
+
+          <p style="margin: 0 0 16px; font-size: 13px; line-height: 1.5; color: #A8988C;">
+            If you did not request this verification code, please ignore this email or reach out to support. Your account remains completely secure.
+          </p>
+
+          <div style="background: rgba(0,0,0,0.25); border-left: 3px solid #E5832D; padding: 12px 16px; border-radius: 6px; font-size: 12px; color: #D4C4B5;">
+            🔒 <strong>Security Tip:</strong> Never share this OTP with anyone, including NUTTRYX representatives.
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="background: #140A05; padding: 20px; text-align: center; font-size: 12px; color: #8A7A70; border-top: 1px solid rgba(255,255,255,0.06);">
+          NUTTRYX Foods • Premium Roasted Peanut Butter • Surat, Gujarat<br>
+          <span style="opacity: 0.7;">© 2026 NUTTRYX. All rights reserved.</span>
+        </div>
+      </div>
+    `;
+
+    console.log(`\n======================================================`);
+    console.log(`🔐 [PASSWORD RESET OTP] TO: ${to}`);
+    console.log(`OTP CODE: ${otp}`);
+    console.log(`RECIPIENT: ${recipientName}`);
+    console.log(`======================================================\n`);
+
+    if (this.transporter) {
+      try {
+        await this.transporter.sendMail({
+          from,
+          to,
+          subject,
+          html
+        });
+        console.log(`✅ Real Password Reset OTP email delivered to ${to} successfully!`);
+        return true;
+      } catch (err) {
+        console.error('❌ Failed to send SMTP Password Reset OTP email:', err);
+        return false;
+      }
+    }
+
+    return true;
+  }
 }
 
 export const emailService = new EmailService();

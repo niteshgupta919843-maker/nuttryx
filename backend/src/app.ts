@@ -10,9 +10,21 @@ export const createApp = (): Application => {
 
   // Middleware
   app.use(compressionMiddleware);
+  const allowedOrigins = [
+    ENV.CLIENT_URL,
+    'http://localhost:3000',
+    'https://nuttryx.vercel.app'
+  ];
+
   app.use(
     cors({
-      origin: [ENV.CLIENT_URL, 'http://localhost:3000'],
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+          callback(null, true);
+        } else {
+          callback(null, true);
+        }
+      },
       credentials: true
     })
   );

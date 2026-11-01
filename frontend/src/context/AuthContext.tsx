@@ -26,6 +26,7 @@ interface AuthContextType {
   openAuthModal: (mode?: 'login' | 'register', prompt?: string, onSuccess?: () => void) => void;
   closeAuthModal: () => void;
   login: (identifier: string, password?: string) => Promise<{ success: boolean; message: string }>;
+  loginWithGoogle: (googleData: { email?: string; name?: string; picture?: string; code?: string; credential?: string }) => Promise<{ success: boolean; message: string }>;
   register: (data: { name: string; email: string; phone: string; password?: string }) => Promise<{ success: boolean; message: string }>;
   updateProfile: (data: Partial<User>) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
@@ -172,6 +173,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async (googleData: { email?: string; name?: string; picture?: string; code?: string; credential?: string }) => {
+    try {
+      let res = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(googleData)
+      });
+
+      if (!res.ok) {
+        res = await fetch('http://localhost:5000/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(googleData)
+        });
+      }
+
+      const json = await res.json();
+      if (json.success && json.data) {
+        setUser(json.data);
+        setToken(json.token || null);
+        localStorage.setItem('nuttryx_user', JSON.stringify(json.data));
+        if (json.token) localStorage.setItem('nuttryx_auth_token', json.token);
+        setIsAuthModalOpen(false);
+        executePendingAction();
+        return { success: true, message: json.message || `Welcome, ${json.data.name}!` };
+      } else {
+        return { success: false, message: json.message || 'Google sign-in failed' };
+      }
+    } catch (err: any) {
+      return { success: false, message: err.message || 'Could not connect to authentication server.' };
+    }
+  };
+
   const updateProfile = async (data: Partial<User>) => {
     if (!user) return { success: false, message: 'You must be signed in.' };
     try {
@@ -228,6 +262,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     openAuthModal,
     closeAuthModal,
     login,
+    loginWithGoogle,
     register,
     updateProfile,
     logout,

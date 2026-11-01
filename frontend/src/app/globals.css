@@ -86,16 +86,37 @@ img {
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 9px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F3ECE2;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #C49F7D;
+  background: #D4B99D;
   border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
+  background: #A67D59;
+}
+
+/* Sleek Modal Scrollbar */
+.modal-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #D4B99D transparent;
+}
+.modal-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 18px 0;
+}
+.modal-scrollbar::-webkit-scrollbar-thumb {
+  background: #D4B99D;
+  border-radius: 99px;
+}
+.modal-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #A67D59;
 }
 

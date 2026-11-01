@@ -66,6 +66,31 @@ export class AuthController {
     }
   }
 
+  async googleLogin(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { credential, code, email, name, picture } = req.body;
+      const result = await authService.loginWithGoogle({
+        credential,
+        code,
+        email,
+        name,
+        picture
+      });
+
+      res.status(200).json({
+        success: true,
+        message: `Welcome, ${result.user.name}!`,
+        data: result.user,
+        token: result.token
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || 'Google sign-in failed'
+      });
+    }
+  }
+
   async getMe(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = (req.query.userId || req.headers['x-user-id']) as string;
@@ -153,13 +178,128 @@ export class AuthController {
     }
   }
 
+  async forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { identifier, newPassword } = req.body;
+      if (!identifier || !newPassword) {
+        res.status(400).json({
+          success: false,
+          message: 'Please provide registered email/mobile and your new password.'
+        });
+        return;
+      }
+
+      await authService.resetPassword(identifier, newPassword);
+      res.status(200).json({
+        success: true,
+        message: 'Password reset successfully! Please sign in with your new password.'
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || 'Failed to reset password.'
+      });
+    }
+  }
+
+  async sendResetOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { identifier, forAdmin } = req.body;
+      if (!identifier || !identifier.trim()) {
+        res.status(400).json({
+          success: false,
+          message: 'Please provide your registered email or mobile number.'
+        });
+        return;
+      }
+
+      const result = await authService.requestPasswordResetOtp(identifier, !!forAdmin);
+      res.status(200).json({
+        success: true,
+        message: result.message,
+        targetEmail: result.targetEmail,
+        maskedEmail: result.maskedEmail,
+        expiresInSeconds: result.expiresInSeconds,
+        devOtp: result.devOtp
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || 'Failed to send OTP.'
+      });
+    }
+  }
+
+  async verifyResetOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { identifier, otp, forAdmin } = req.body;
+      if (!identifier || !otp) {
+        res.status(400).json({
+          success: false,
+          message: 'Please provide your email/mobile and the 6-digit OTP code.'
+        });
+        return;
+      }
+
+      const result = await authService.verifyPasswordResetOtp(identifier, otp, !!forAdmin);
+      res.status(200).json({
+        success: true,
+        message: result.message,
+        resetToken: result.resetToken
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || 'OTP verification failed.'
+      });
+    }
+  }
+
+  async resetPasswordWithOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { identifier, resetToken, newPassword, forAdmin } = req.body;
+      if (!identifier || !resetToken || !newPassword) {
+        res.status(400).json({
+          success: false,
+          message: 'Missing required parameters to complete password reset.'
+        });
+        return;
+      }
+
+      const result = await authService.completePasswordResetWithOtp({
+        identifier,
+        resetToken,
+        newPassword,
+        forAdmin: !!forAdmin
+      });
+
+      res.status(200).json({
+        success: true,
+        message: result.message
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || 'Failed to reset password.'
+      });
+    }
+  }
+
   async verifyAdminPasscode(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { passcode } = req.body;
-      const expectedPasscode = process.env.ADMIN_SECRET || 'Nuttryx@Admin2026';
+      const usernameInput = (req.body.username || req.body.email || '').trim().toLowerCase();
+      const passcode = req.body.passcode || req.body.password;
+      const expectedPasscode = process.env.ADMIN_SECRET || 'Admin@2026N';
+      const expectedAdminEmail = (process.env.ADMIN_EMAIL || 'niteshgupta919843@gmail.com').trim().toLowerCase();
+
+      // Validate username / email if provided
+      if (usernameInput && usernameInput !== expectedAdminEmail && usernameInput !== 'admin') {
+        res.status(401).json({ success: false, message: 'Invalid Admin username or email.' });
+        return;
+      }
 
       if (!passcode || passcode !== expectedPasscode) {
-        res.status(401).json({ success: false, message: 'Invalid Admin passcode.' });
+        res.status(401).json({ success: false, message: 'Invalid Admin password.' });
         return;
       }
 

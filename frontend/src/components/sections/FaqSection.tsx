@@ -1,11 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FAQS } from '@/data/products';
 import { ChevronDown, HelpCircle, Sparkles, MessageCircle } from 'lucide-react';
 
 export default function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [faqsList, setFaqsList] = useState<{ id?: string; q: string; a: string; category?: string }[]>(FAQS);
+
+  useEffect(() => {
+    fetch('/api/faqs')
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setFaqsList(json.data.map((f: any) => ({
+            id: f.id,
+            q: f.question,
+            a: f.answer,
+            category: f.category
+          })));
+        }
+      })
+      .catch(() => {
+        // Fallback to static FAQS
+      });
+  }, []);
 
   const toggleAccordion = (idx: number) => {
     setOpenIndex(openIndex === idx ? null : idx);
@@ -28,7 +47,7 @@ export default function FaqSection() {
 
         {/* Accordion List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {FAQS.map((faq, idx) => {
+          {faqsList.map((faq, idx) => {
             const isOpen = openIndex === idx;
             return (
               <div 
