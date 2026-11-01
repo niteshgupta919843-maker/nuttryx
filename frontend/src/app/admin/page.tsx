@@ -223,6 +223,7 @@ export interface MockReview {
 }
 
 const ADMIN_SECRET = 'Nuttryx@Admin2026';
+const BACKEND_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://nuttryx.onrender.com').replace(/\/$/, '');
 
 export default function AdminDashboard() {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
@@ -607,7 +608,7 @@ export default function AdminDashboard() {
       // 4. Fetch hero slides (always cache-busting to reflect instant updates)
       let slidesRes = await fetch(`/api/slides?_t=${Date.now()}`, { cache: 'no-store' });
       if (!slidesRes.ok) {
-        slidesRes = await fetch(`http://localhost:5000/api/slides?_t=${Date.now()}`, { cache: 'no-store' });
+        slidesRes = await fetch(`${BACKEND_BASE}/api/slides?_t=${Date.now()}`, { cache: 'no-store' });
       }
       if (slidesRes.ok) {
         const slideJson = await slidesRes.json();
@@ -620,7 +621,7 @@ export default function AdminDashboard() {
       try {
         let tickerRes = await fetch(`/api/ticker?_t=${Date.now()}`, { cache: 'no-store' });
         if (!tickerRes.ok) {
-          tickerRes = await fetch(`http://localhost:5000/api/ticker?_t=${Date.now()}`, { cache: 'no-store' });
+          tickerRes = await fetch(`${BACKEND_BASE}/api/ticker?_t=${Date.now()}`, { cache: 'no-store' });
         }
         if (tickerRes.ok) {
           const tickerJson = await tickerRes.json();
@@ -636,7 +637,7 @@ export default function AdminDashboard() {
       try {
         let settingsRes = await fetch(`/api/settings?_t=${Date.now()}`, { cache: 'no-store' });
         if (!settingsRes.ok) {
-          settingsRes = await fetch(`http://localhost:5000/api/settings?_t=${Date.now()}`, { cache: 'no-store' });
+          settingsRes = await fetch(`${BACKEND_BASE}/api/settings?_t=${Date.now()}`, { cache: 'no-store' });
         }
         if (settingsRes.ok) {
           const settingsJson = await settingsRes.json();
@@ -655,7 +656,7 @@ export default function AdminDashboard() {
       try {
         let faqsRes = await fetch(`/api/faqs/admin?_t=${Date.now()}`, { cache: 'no-store' });
         if (!faqsRes.ok) {
-          faqsRes = await fetch(`http://localhost:5000/api/faqs/admin?_t=${Date.now()}`, { cache: 'no-store' });
+          faqsRes = await fetch(`${BACKEND_BASE}/api/faqs/admin?_t=${Date.now()}`, { cache: 'no-store' });
         }
         if (faqsRes.ok) {
           const faqsJson = await faqsRes.json();
@@ -671,7 +672,7 @@ export default function AdminDashboard() {
       try {
         let craftRes = await fetch(`/api/craft?_t=${Date.now()}`, { cache: 'no-store' });
         if (!craftRes.ok) {
-          craftRes = await fetch(`http://localhost:5000/api/craft?_t=${Date.now()}`, { cache: 'no-store' });
+          craftRes = await fetch(`${BACKEND_BASE}/api/craft?_t=${Date.now()}`, { cache: 'no-store' });
         }
         if (craftRes.ok) {
           const craftJson = await craftRes.json();
@@ -692,7 +693,7 @@ export default function AdminDashboard() {
       try {
         let lifeRes = await fetch(`/api/lifestyle?_t=${Date.now()}`, { cache: 'no-store' });
         if (!lifeRes.ok) {
-          lifeRes = await fetch(`http://localhost:5000/api/lifestyle?_t=${Date.now()}`, { cache: 'no-store' });
+          lifeRes = await fetch(`${BACKEND_BASE}/api/lifestyle?_t=${Date.now()}`, { cache: 'no-store' });
         }
         if (lifeRes.ok) {
           const lifeJson = await lifeRes.json();
@@ -713,7 +714,7 @@ export default function AdminDashboard() {
       try {
         let benRes = await fetch(`/api/benefit?_t=${Date.now()}`, { cache: 'no-store' });
         if (!benRes.ok) {
-          benRes = await fetch(`http://localhost:5000/api/benefit?_t=${Date.now()}`, { cache: 'no-store' });
+          benRes = await fetch(`${BACKEND_BASE}/api/benefit?_t=${Date.now()}`, { cache: 'no-store' });
         }
         if (benRes.ok) {
           const benJson = await benRes.json();
@@ -737,7 +738,7 @@ export default function AdminDashboard() {
       try {
         let revRes = await fetch(`/api/reviews?admin=true&_t=${Date.now()}`, { cache: 'no-store' });
         if (!revRes.ok) {
-          revRes = await fetch(`http://localhost:5000/api/reviews?admin=true&_t=${Date.now()}`, { cache: 'no-store' });
+          revRes = await fetch(`${BACKEND_BASE}/api/reviews?admin=true&_t=${Date.now()}`, { cache: 'no-store' });
         }
         if (revRes.ok) {
           const revJson = await revRes.json();
@@ -1004,7 +1005,7 @@ export default function AdminDashboard() {
         body: JSON.stringify(newProd)
       });
       if (!res.ok) {
-        res = await fetch('http://localhost:5000/api/products', {
+        res = await fetch(`${BACKEND_BASE}/api/products`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -1109,7 +1110,7 @@ export default function AdminDashboard() {
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
-          res = await fetch(`http://localhost:5000/api/slides/${editingSlide.id}?_t=${timestamp}`, {
+          res = await fetch(`${BACKEND_BASE}/api/slides/${editingSlide.id}?_t=${timestamp}`, {
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',
@@ -1149,7 +1150,7 @@ export default function AdminDashboard() {
           body: JSON.stringify(newSlideItem)
         });
         if (!res.ok) {
-          res = await fetch('http://localhost:5000/api/slides', {
+          res = await fetch(`${BACKEND_BASE}/api/slides`, {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
@@ -1187,7 +1188,7 @@ export default function AdminDashboard() {
         headers: { 'x-admin-secret': ADMIN_SECRET }
       });
       if (!res.ok) {
-        res = await fetch(`http://localhost:5000/api/slides/${targetId}`, { 
+        res = await fetch(`${BACKEND_BASE}/api/slides/${targetId}`, { 
           method: 'DELETE',
           headers: { 'x-admin-secret': ADMIN_SECRET }
         });
@@ -1218,7 +1219,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({ items: itemsToSave })
       });
       if (!res.ok) {
-        res = await fetch('http://localhost:5000/api/ticker', {
+        res = await fetch(`${BACKEND_BASE}/api/ticker`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -1257,7 +1258,7 @@ export default function AdminDashboard() {
         body: JSON.stringify(settingsToSave)
       });
       if (!res.ok) {
-        res = await fetch('http://localhost:5000/api/settings', {
+        res = await fetch(`${BACKEND_BASE}/api/settings`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -1328,7 +1329,7 @@ export default function AdminDashboard() {
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
-          res = await fetch(`http://localhost:5000/api/faqs/${editingFaq.id}`, {
+          res = await fetch(`${BACKEND_BASE}/api/faqs/${editingFaq.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1349,7 +1350,7 @@ export default function AdminDashboard() {
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
-          res = await fetch('http://localhost:5000/api/faqs', {
+          res = await fetch(`${BACKEND_BASE}/api/faqs`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1377,7 +1378,7 @@ export default function AdminDashboard() {
     try {
       let res = await fetch(`/api/faqs/${id}`, { method: 'DELETE' });
       if (!res.ok) {
-        res = await fetch(`http://localhost:5000/api/faqs/${id}`, { method: 'DELETE' });
+        res = await fetch(`${BACKEND_BASE}/api/faqs/${id}`, { method: 'DELETE' });
       }
       const data = await res.json();
       if (res.ok && data.success) {
@@ -1400,7 +1401,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({ isActive: nextStatus })
       });
       if (!res.ok) {
-        res = await fetch(`http://localhost:5000/api/faqs/${faq.id}`, {
+        res = await fetch(`${BACKEND_BASE}/api/faqs/${faq.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ isActive: nextStatus })
@@ -1431,7 +1432,7 @@ export default function AdminDashboard() {
         body: JSON.stringify(payload)
       });
       if (!res.ok) {
-        res = await fetch('http://localhost:5000/api/craft', {
+        res = await fetch(`${BACKEND_BASE}/api/craft`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -1501,7 +1502,7 @@ export default function AdminDashboard() {
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
-          res = await fetch(`http://localhost:5000/api/craft/steps/${editingCraftStep.id}`, {
+          res = await fetch(`${BACKEND_BASE}/api/craft/steps/${editingCraftStep.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1522,7 +1523,7 @@ export default function AdminDashboard() {
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
-          res = await fetch('http://localhost:5000/api/craft/steps', {
+          res = await fetch(`${BACKEND_BASE}/api/craft/steps`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1550,7 +1551,7 @@ export default function AdminDashboard() {
     try {
       let res = await fetch(`/api/craft/steps/${stepId}`, { method: 'DELETE' });
       if (!res.ok) {
-        res = await fetch(`http://localhost:5000/api/craft/steps/${stepId}`, { method: 'DELETE' });
+        res = await fetch(`${BACKEND_BASE}/api/craft/steps/${stepId}`, { method: 'DELETE' });
       }
       const data = await res.json();
       if (res.ok && data.success && data.allSteps) {
@@ -1573,7 +1574,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({ isActive: nextStatus })
       });
       if (!res.ok) {
-        res = await fetch(`http://localhost:5000/api/craft/steps/${step.id}`, {
+        res = await fetch(`${BACKEND_BASE}/api/craft/steps/${step.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ isActive: nextStatus })
@@ -1604,7 +1605,7 @@ export default function AdminDashboard() {
         body: JSON.stringify(payload)
       });
       if (!res.ok) {
-        res = await fetch('http://localhost:5000/api/lifestyle', {
+        res = await fetch(`${BACKEND_BASE}/api/lifestyle`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -1673,7 +1674,7 @@ export default function AdminDashboard() {
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
-          res = await fetch(`http://localhost:5000/api/lifestyle/pillars/${editingPillar.id}`, {
+          res = await fetch(`${BACKEND_BASE}/api/lifestyle/pillars/${editingPillar.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1694,7 +1695,7 @@ export default function AdminDashboard() {
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
-          res = await fetch('http://localhost:5000/api/lifestyle/pillars', {
+          res = await fetch(`${BACKEND_BASE}/api/lifestyle/pillars`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1722,7 +1723,7 @@ export default function AdminDashboard() {
     try {
       let res = await fetch(`/api/lifestyle/pillars/${pillarId}`, { method: 'DELETE' });
       if (!res.ok) {
-        res = await fetch(`http://localhost:5000/api/lifestyle/pillars/${pillarId}`, { method: 'DELETE' });
+        res = await fetch(`${BACKEND_BASE}/api/lifestyle/pillars/${pillarId}`, { method: 'DELETE' });
       }
       const data = await res.json();
       if (res.ok && data.success && data.allPillars) {
@@ -1745,7 +1746,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({ isActive: nextStatus })
       });
       if (!res.ok) {
-        res = await fetch(`http://localhost:5000/api/lifestyle/pillars/${pillar.id}`, {
+        res = await fetch(`${BACKEND_BASE}/api/lifestyle/pillars/${pillar.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ isActive: nextStatus })
@@ -1782,7 +1783,7 @@ export default function AdminDashboard() {
         body: JSON.stringify(payload)
       });
       if (!res.ok) {
-        res = await fetch('http://localhost:5000/api/benefit', {
+        res = await fetch(`${BACKEND_BASE}/api/benefit`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -1850,7 +1851,7 @@ export default function AdminDashboard() {
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
-          res = await fetch(`http://localhost:5000/api/benefit/rows/${editingBenefitRow.id}`, {
+          res = await fetch(`${BACKEND_BASE}/api/benefit/rows/${editingBenefitRow.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1863,7 +1864,7 @@ export default function AdminDashboard() {
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
-          res = await fetch('http://localhost:5000/api/benefit/rows', {
+          res = await fetch(`${BACKEND_BASE}/api/benefit/rows`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1903,7 +1904,7 @@ export default function AdminDashboard() {
     try {
       let res = await fetch(`/api/benefit/rows/${rowId}`, { method: 'DELETE' });
       if (!res.ok) {
-        res = await fetch(`http://localhost:5000/api/benefit/rows/${rowId}`, { method: 'DELETE' });
+        res = await fetch(`${BACKEND_BASE}/api/benefit/rows/${rowId}`, { method: 'DELETE' });
       }
       const data = await res.json();
       if (res.ok && data.success) {
@@ -1933,7 +1934,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({ isActive: nextStatus })
       });
       if (!res.ok) {
-        res = await fetch(`http://localhost:5000/api/benefit/rows/${row.id}`, {
+        res = await fetch(`${BACKEND_BASE}/api/benefit/rows/${row.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ isActive: nextStatus })
@@ -2006,7 +2007,7 @@ export default function AdminDashboard() {
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
-          res = await fetch(`http://localhost:5000/api/reviews/${editingReview.id}`, {
+          res = await fetch(`${BACKEND_BASE}/api/reviews/${editingReview.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -2019,7 +2020,7 @@ export default function AdminDashboard() {
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
-          res = await fetch('http://localhost:5000/api/reviews', {
+          res = await fetch(`${BACKEND_BASE}/api/reviews`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -2055,7 +2056,7 @@ export default function AdminDashboard() {
     try {
       let res = await fetch(`/api/reviews/${reviewId}`, { method: 'DELETE' });
       if (!res.ok) {
-        res = await fetch(`http://localhost:5000/api/reviews/${reviewId}`, { method: 'DELETE' });
+        res = await fetch(`${BACKEND_BASE}/api/reviews/${reviewId}`, { method: 'DELETE' });
       }
       const data = await res.json();
       if (res.ok && data.success) {
@@ -2081,7 +2082,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({ isActive: nextStatus })
       });
       if (!res.ok) {
-        res = await fetch(`http://localhost:5000/api/reviews/${rev.id}`, {
+        res = await fetch(`${BACKEND_BASE}/api/reviews/${rev.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ isActive: nextStatus })

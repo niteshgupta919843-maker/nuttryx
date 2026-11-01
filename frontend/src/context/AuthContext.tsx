@@ -34,6 +34,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const BACKEND_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://nuttryx.onrender.com').replace(/\/$/, '');
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -116,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!res.ok) {
-        res = await fetch('http://localhost:5000/api/auth/login', {
+        res = await fetch(`${BACKEND_BASE}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ identifier: identifier.trim(), password })
@@ -149,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!res.ok) {
-        res = await fetch('http://localhost:5000/api/auth/register', {
+        res = await fetch(`${BACKEND_BASE}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
@@ -182,7 +183,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!res.ok) {
-        res = await fetch('http://localhost:5000/api/auth/google', {
+        res = await fetch(`${BACKEND_BASE}/api/auth/google`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(googleData)
@@ -216,7 +217,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!res.ok) {
-        res = await fetch('http://localhost:5000/api/auth/profile', {
+        res = await fetch(`${BACKEND_BASE}/api/auth/profile`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: user.id, ...data })
