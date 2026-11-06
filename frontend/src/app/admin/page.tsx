@@ -114,7 +114,7 @@ const INITIAL_SLIDES_LIST: MockSlide[] = [
     badge3: '100%\nNATURAL',
     buttonText: 'Shop Now',
     buttonLink: '/shop',
-    sampleButtonText: 'Get Free Sample',
+    sampleButtonText: 'Book 50g Sample',
     order: 1,
     isActive: true
   },
@@ -131,7 +131,7 @@ const INITIAL_SLIDES_LIST: MockSlide[] = [
     badge3: '100%\nNATURAL',
     buttonText: 'Shop Now',
     buttonLink: '/shop',
-    sampleButtonText: 'Get Free Sample',
+    sampleButtonText: 'Book 50g Sample',
     order: 2,
     isActive: true
   },
@@ -148,7 +148,7 @@ const INITIAL_SLIDES_LIST: MockSlide[] = [
     badge3: '100%\nNATURAL',
     buttonText: 'Shop Now',
     buttonLink: '/shop',
-    sampleButtonText: 'Get Free Sample',
+    sampleButtonText: 'Book 50g Sample',
     order: 3,
     isActive: true
   }
@@ -450,7 +450,7 @@ export default function AdminDashboard() {
   const [slideBadge3, setSlideBadge3] = useState('100%\nNATURAL');
   const [slideBtnText, setSlideBtnText] = useState('Shop Now');
   const [slideBtnLink, setSlideBtnLink] = useState('/shop');
-  const [slideSampleBtnText, setSlideSampleBtnText] = useState('Get Free Sample');
+  const [slideSampleBtnText, setSlideSampleBtnText] = useState('Book 50g Sample');
   const [slideImageMode, setSlideImageMode] = useState<'upload' | 'url' | 'preset'>('upload');
   const [slideImageFileName, setSlideImageFileName] = useState<string>('');
 
@@ -1045,7 +1045,7 @@ export default function AdminDashboard() {
     setSlideBadge3('');
     setSlideBtnText('Shop Now');
     setSlideBtnLink('/shop');
-    setSlideSampleBtnText('Get Free Sample');
+    setSlideSampleBtnText('Book 50g Sample');
     setShowSlideModal(true);
   };
 
@@ -1070,7 +1070,7 @@ export default function AdminDashboard() {
     setSlideBadge3(slide.badge3 || '');
     setSlideBtnText(slide.buttonText || 'Shop Now');
     setSlideBtnLink(slide.buttonLink || '/shop');
-    setSlideSampleBtnText(slide.sampleButtonText || 'Get Free Sample');
+    setSlideSampleBtnText(slide.sampleButtonText || 'Book 50g Sample');
     setShowSlideModal(true);
   };
 
@@ -1090,7 +1090,7 @@ export default function AdminDashboard() {
       badge3: slideBadge3.trim(),
       buttonText: slideBtnText.trim() || 'Shop Now',
       buttonLink: slideBtnLink.trim() || '/shop',
-      sampleButtonText: slideSampleBtnText.trim() || 'Get Free Sample',
+      sampleButtonText: slideSampleBtnText.trim() || 'Book 50g Sample',
       order: editingSlide ? editingSlide.order : slidesList.length + 1,
       isActive: true
     };
@@ -7278,7 +7278,7 @@ export default function AdminDashboard() {
                       type="text" 
                       value={slideSampleBtnText}
                       onChange={(e) => setSlideSampleBtnText(e.target.value)}
-                      placeholder="Get Free Sample"
+                      placeholder="Book 50g Sample"
                       style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #ECE4D8', fontSize: '0.82rem' }}
                     />
                   </div>

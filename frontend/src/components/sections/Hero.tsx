@@ -43,7 +43,7 @@ const HERO_SLIDES: HeroSlide[] = [
     bannerImage: '/images/hero-bg-dark-chocolate.jpg',
     buttonText: 'Shop Now',
     buttonLink: '/shop',
-    sampleButtonText: 'Get Free Sample',
+    sampleButtonText: 'Book 50g Sample',
     badges: [
       { icon: Dumbbell, label: 'HIGH\nPROTEIN' },
       { icon: Leaf, label: 'NO ADDED\nSUGAR' },
@@ -60,7 +60,7 @@ const HERO_SLIDES: HeroSlide[] = [
     bannerImage: '/images/hero-bg-creamy.jpg',
     buttonText: 'Shop Now',
     buttonLink: '/shop',
-    sampleButtonText: 'Get Free Sample',
+    sampleButtonText: 'Book 50g Sample',
     badges: [
       { icon: Dumbbell, label: 'HIGH\nPROTEIN' },
       { icon: Leaf, label: 'NO ADDED\nSUGAR' },
@@ -77,7 +77,7 @@ const HERO_SLIDES: HeroSlide[] = [
     bannerImage: '/images/hero-bg-crunchy.jpg',
     buttonText: 'Shop Now',
     buttonLink: '/shop',
-    sampleButtonText: 'Get Free Sample',
+    sampleButtonText: 'Book 50g Sample',
     badges: [
       { icon: Dumbbell, label: 'HIGH\nPROTEIN' },
       { icon: Leaf, label: 'NO ADDED\nSUGAR' },
@@ -123,7 +123,7 @@ export default function Hero() {
                 bannerImage: s.bannerImage || '/images/hero-bg-dark-chocolate.jpg',
                 buttonText: s.buttonText || 'Shop Now',
                 buttonLink: s.buttonLink || '/shop',
-                sampleButtonText: s.sampleButtonText || 'Get Free Sample',
+                sampleButtonText: s.sampleButtonText || 'Book 50g Sample',
                 badges: [
                   { icon: Dumbbell, label: s.badge1 || 'HIGH\nPROTEIN' },
                   { icon: Leaf, label: s.badge2 || 'NO ADDED\nSUGAR' },
@@ -441,7 +441,7 @@ export default function Hero() {
                   e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
-                <span>{currentSlide.sampleButtonText || 'Get Free Sample'}</span>
+                <span>{currentSlide.sampleButtonText || 'Book 50g Sample'}</span>
               </button>
             </div>
           </div>

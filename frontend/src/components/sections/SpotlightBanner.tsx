@@ -521,7 +521,7 @@ export default function SpotlightBanner() {
                     e.currentTarget.style.transform = 'translateY(0)';
                   }}
                 >
-                  <span>Request Free Sample Pack</span>
+                  <span>Request 50g Sample Pack</span>
                 </button>
               </div>
 

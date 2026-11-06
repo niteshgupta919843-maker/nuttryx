@@ -14,7 +14,7 @@ export const INITIAL_SLIDES: ISlide[] = [
     badge3: '100%\nNATURAL',
     buttonText: 'Shop Now',
     buttonLink: '/shop',
-    sampleButtonText: 'Get Free Sample',
+    sampleButtonText: 'Book 50g Sample',
     order: 1,
     isActive: true
   },
@@ -31,7 +31,7 @@ export const INITIAL_SLIDES: ISlide[] = [
     badge3: '100%\nNATURAL',
     buttonText: 'Shop Now',
     buttonLink: '/shop',
-    sampleButtonText: 'Get Free Sample',
+    sampleButtonText: 'Book 50g Sample',
     order: 2,
     isActive: true
   },
@@ -48,7 +48,7 @@ export const INITIAL_SLIDES: ISlide[] = [
     badge3: '100%\nNATURAL',
     buttonText: 'Shop Now',
     buttonLink: '/shop',
-    sampleButtonText: 'Get Free Sample',
+    sampleButtonText: 'Book 50g Sample',
     order: 3,
     isActive: true
   }

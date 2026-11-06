@@ -163,7 +163,7 @@ export default function Header() {
               }}
             >
               <span>🎁</span>
-              <span>Want to Taste First? <strong style={{ textDecoration: 'underline', color: '#FFD199' }}>Book Free Sample</strong></span>
+              <span>Want to Taste First? <strong style={{ textDecoration: 'underline', color: '#FFD199' }}>Book 50g Sample</strong></span>
             </button>
           </div>
 

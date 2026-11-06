@@ -340,7 +340,7 @@ export default function SampleModal() {
                 className="btn btn-accent"
                 style={{ width: '100%', padding: '13px', fontSize: '0.96rem', cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
               >
-                <Send size={16} /> {isSubmitting ? 'Sending Request...' : 'Dispatch My Free Sample Jar'}
+                <Send size={16} /> {isSubmitting ? 'Sending Request...' : 'Dispatch My 50g Sample Jar'}
               </button>
 
               <p style={{ textAlign: 'center', fontSize: '0.74rem', color: '#9E8C80', marginTop: '12px' }}>
