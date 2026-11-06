@@ -423,6 +423,9 @@ export default function AdminDashboard() {
   const [editProductPrice, setEditProductPrice] = useState(299);
   const [editProductCategory, setEditProductCategory] = useState<'all' | 'protein' | 'chocolate' | 'combos'>('protein');
   const [editProductWeight, setEditProductWeight] = useState('500g');
+  const [editProductStock, setEditProductStock] = useState<boolean>(true);
+  const [editProductDescription, setEditProductDescription] = useState<string>('');
+  const [editProductBadge, setEditProductBadge] = useState<string>('');
   const [editProductImage, setEditProductImage] = useState<string>('/images/creamy-peanut-butter.jpg');
   const [editImageInputMode, setEditImageInputMode] = useState<'upload' | 'url'>('upload');
   const [editUploadFileName, setEditUploadFileName] = useState<string>('');
@@ -597,12 +600,18 @@ export default function AdminDashboard() {
         }
       }
 
-      // 3. Fetch products catalog
-      const productsRes = await fetch('/api/products');
+      // 3. Fetch products catalog (cache-busting + fallback)
+      let productsRes = await fetch(`/api/products?_t=${Date.now()}`, { cache: 'no-store' });
+      if (!productsRes.ok) {
+        productsRes = await fetch(`${BACKEND_BASE}/api/products?_t=${Date.now()}`, { cache: 'no-store' });
+      }
       if (productsRes.ok) {
         const prodJson = await productsRes.json();
         if (prodJson.success && Array.isArray(prodJson.data) && prodJson.data.length > 0) {
           setProductsList(prodJson.data);
+          try {
+            localStorage.setItem('nuttryx_cached_products', JSON.stringify(prodJson.data));
+          } catch {}
         }
       }
 
@@ -773,7 +782,7 @@ export default function AdminDashboard() {
     showToast(`Order ${orderId} updated to ${newStatus}`);
 
     try {
-      await fetch(`/api/orders/${orderId}/status`, {
+      let res = await fetch(`/api/orders/${orderId}/status?_t=${Date.now()}`, {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
@@ -781,6 +790,19 @@ export default function AdminDashboard() {
         },
         body: JSON.stringify({ status: newStatus.toLowerCase() })
       });
+      if (!res.ok) {
+        res = await fetch(`${BACKEND_BASE}/api/orders/${orderId}/status?_t=${Date.now()}`, {
+          method: 'PATCH',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-admin-secret': ADMIN_SECRET
+          },
+          body: JSON.stringify({ status: newStatus.toLowerCase() })
+        });
+      }
+      if (res.ok) {
+        syncWithBackend(true);
+      }
     } catch {
       // offline resilience
     }
@@ -795,7 +817,7 @@ export default function AdminDashboard() {
     showToast(`Sample ${sampleId} marked as ${displayStatus}`);
 
     try {
-      await fetch(`/api/samples/${sampleId}/status`, {
+      let res = await fetch(`/api/samples/${sampleId}/status?_t=${Date.now()}`, {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
@@ -803,6 +825,19 @@ export default function AdminDashboard() {
         },
         body: JSON.stringify({ status: nextStatus })
       });
+      if (!res.ok) {
+        res = await fetch(`${BACKEND_BASE}/api/samples/${sampleId}/status?_t=${Date.now()}`, {
+          method: 'PATCH',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-admin-secret': ADMIN_SECRET
+          },
+          body: JSON.stringify({ status: nextStatus })
+        });
+      }
+      if (res.ok) {
+        syncWithBackend(true);
+      }
     } catch {
       // offline resilience
     }
@@ -815,6 +850,9 @@ export default function AdminDashboard() {
     setEditProductCategory(p.category);
     setEditProductPrice(p.sizes?.[0]?.price || 299);
     setEditProductWeight(p.sizes?.[0]?.weight || '500g');
+    setEditProductStock(p.sizes?.[0]?.inStock !== false);
+    setEditProductDescription(p.description || '');
+    setEditProductBadge(p.badge || '');
     setEditProductImage(p.image || '/images/creamy-peanut-butter.jpg');
     setEditImageInputMode(p.image?.startsWith('http') ? 'url' : 'upload');
     setEditUploadFileName('');
@@ -845,23 +883,39 @@ export default function AdminDashboard() {
     if (!editingProduct) return;
 
     const updatedSizes = editingProduct.sizes && editingProduct.sizes.length > 0
-      ? editingProduct.sizes.map((s, idx) => idx === 0 ? { ...s, price: Number(editProductPrice), weight: editProductWeight } : s)
-      : [{ weight: editProductWeight, price: Number(editProductPrice), originalPrice: Number(editProductPrice) + 100, inStock: true }];
+      ? editingProduct.sizes.map((s, idx) => idx === 0 ? { 
+          ...s, 
+          price: Number(editProductPrice), 
+          weight: editProductWeight,
+          inStock: editProductStock,
+          originalPrice: s.originalPrice && s.originalPrice > Number(editProductPrice) ? s.originalPrice : Number(editProductPrice) + 100
+        } : s)
+      : [{ 
+          weight: editProductWeight, 
+          price: Number(editProductPrice), 
+          originalPrice: Number(editProductPrice) + 100, 
+          inStock: editProductStock 
+        }];
 
     const payload = {
-      name: editProductName,
-      subtitle: editProductSubtitle,
+      name: editProductName.trim(),
+      subtitle: editProductSubtitle.trim(),
       category: editProductCategory,
       sizes: updatedSizes,
-      image: editProductImage
+      image: editProductImage,
+      description: editProductDescription.trim() || editingProduct.description || '100% Roasted Gujarat Bold Peanuts.',
+      badge: editProductBadge.trim()
     };
 
     setProductsList(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...payload } : p));
+    const targetId = editingProduct.id;
+    const targetName = editProductName;
     setEditingProduct(null);
-    showToast(`✓ Product "${editProductName}" updated!`);
+    showToast(`Saving "${targetName}" to database...`);
 
     try {
-      await fetch(`/api/products/${editingProduct.id}`, {
+      const timestamp = Date.now();
+      let res = await fetch(`/api/products/${targetId}?_t=${timestamp}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -869,12 +923,32 @@ export default function AdminDashboard() {
         },
         body: JSON.stringify(payload)
       });
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('nuttryx_catalog_updated', String(Date.now()));
-        window.dispatchEvent(new Event('nuttryx_catalog_updated'));
+      if (!res.ok) {
+        res = await fetch(`${BACKEND_BASE}/api/products/${targetId}?_t=${timestamp}`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-admin-secret': ADMIN_SECRET
+          },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      if (res.ok) {
+        showToast(`✓ Product "${targetName}" saved permanently in Database!`);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('nuttryx_catalog_updated', String(Date.now()));
+          window.dispatchEvent(new Event('nuttryx_catalog_updated'));
+        }
+        await syncWithBackend(true);
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        showToast(`⚠ Failed to save: ${errJson.message || res.statusText}`);
+        await syncWithBackend(true);
       }
     } catch (err) {
       console.error('Update product error:', err);
+      showToast('⚠ Network error saving product');
     }
   };
 
@@ -889,17 +963,26 @@ export default function AdminDashboard() {
     showToast(`Deleting "${targetName}"...`);
 
     try {
-      const res = await fetch(`/api/products/${targetId}`, {
+      const timestamp = Date.now();
+      let res = await fetch(`/api/products/${targetId}?_t=${timestamp}`, {
         method: 'DELETE',
         headers: { 'x-admin-secret': ADMIN_SECRET }
       });
+      if (!res.ok) {
+        res = await fetch(`${BACKEND_BASE}/api/products/${targetId}?_t=${timestamp}`, {
+          method: 'DELETE',
+          headers: { 'x-admin-secret': ADMIN_SECRET }
+        });
+      }
       if (res.ok) {
         showToast(`✓ "${targetName}" deleted permanently from Database!`);
         if (typeof window !== 'undefined') {
           localStorage.setItem('nuttryx_catalog_updated', String(Date.now()));
           window.dispatchEvent(new Event('nuttryx_catalog_updated'));
         }
-        syncWithBackend(true);
+        await syncWithBackend(true);
+      } else {
+        showToast(`⚠ Failed to delete: ${res.statusText}`);
       }
     } catch (err) {
       console.error('Delete product failed:', err);
@@ -1643,6 +1726,10 @@ export default function AdminDashboard() {
       const data = await res.json();
       if (data.success) {
         showToast('✅ Lifestyle section header updated successfully!');
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('nuttryx_lifestyle_updated', String(Date.now()));
+          window.dispatchEvent(new Event('nuttryx_lifestyle_updated'));
+        }
       } else {
         showToast(`❌ ${data.message || 'Failed to update header'}`);
       }
@@ -1714,6 +1801,10 @@ export default function AdminDashboard() {
           setLifestylePillars(data.allPillars);
           showToast('✅ Lifestyle card updated successfully!');
           setIsPillarModalOpen(false);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('nuttryx_lifestyle_updated', String(Date.now()));
+            window.dispatchEvent(new Event('nuttryx_lifestyle_updated'));
+          }
         } else {
           showToast(`❌ ${data.message || 'Failed to update pillar'}`);
         }
@@ -1735,6 +1826,10 @@ export default function AdminDashboard() {
           setLifestylePillars(data.allPillars);
           showToast('✅ Lifestyle card added successfully!');
           setIsPillarModalOpen(false);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('nuttryx_lifestyle_updated', String(Date.now()));
+            window.dispatchEvent(new Event('nuttryx_lifestyle_updated'));
+          }
         } else {
           showToast(`❌ ${data.message || 'Failed to create pillar'}`);
         }
@@ -1758,6 +1853,10 @@ export default function AdminDashboard() {
       if (res.ok && data.success && data.allPillars) {
         setLifestylePillars(data.allPillars);
         showToast('🗑️ Lifestyle card deleted successfully!');
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('nuttryx_lifestyle_updated', String(Date.now()));
+          window.dispatchEvent(new Event('nuttryx_lifestyle_updated'));
+        }
       } else {
         showToast(`❌ ${data.message || 'Failed to delete pillar'}`);
       }
@@ -1785,6 +1884,10 @@ export default function AdminDashboard() {
       if (res.ok && data.success && data.allPillars) {
         setLifestylePillars(data.allPillars);
         showToast(`Card is now ${nextStatus ? 'Live on Store' : 'Hidden'}`);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('nuttryx_lifestyle_updated', String(Date.now()));
+          window.dispatchEvent(new Event('nuttryx_lifestyle_updated'));
+        }
       }
     } catch {
       showToast('❌ Could not toggle card status');
@@ -7497,7 +7600,7 @@ export default function AdminDashboard() {
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#20100A', marginBottom: '4px' }}>
                       Category
@@ -7554,6 +7657,71 @@ export default function AdminDashboard() {
                       style={{
                         width: '100%',
                         padding: '9px 10px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #E4DACD',
+                        outline: 'none',
+                        fontSize: '0.88rem'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#20100A', marginBottom: '4px' }}>
+                      Stock Status
+                    </label>
+                    <select
+                      value={editProductStock ? 'in_stock' : 'out_of_stock'}
+                      onChange={(e) => setEditProductStock(e.target.value === 'in_stock')}
+                      style={{
+                        width: '100%',
+                        padding: '9px 10px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #E4DACD',
+                        outline: 'none',
+                        fontSize: '0.85rem',
+                        background: editProductStock ? '#F0FFF4' : '#FFF5F5',
+                        color: editProductStock ? '#22543D' : '#9B2C2C',
+                        fontWeight: 700
+                      }}
+                    >
+                      <option value="in_stock">🟢 In Stock</option>
+                      <option value="out_of_stock">🔴 Out of Stock</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '10px', marginBottom: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#20100A', marginBottom: '4px' }}>
+                      Badge (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Bestseller 🔥"
+                      value={editProductBadge}
+                      onChange={(e) => setEditProductBadge(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '9px 12px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #E4DACD',
+                        outline: 'none',
+                        fontSize: '0.88rem'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#20100A', marginBottom: '4px' }}>
+                      Description
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Product details, roasting process, or ingredients summary"
+                      value={editProductDescription}
+                      onChange={(e) => setEditProductDescription(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '9px 12px',
                         borderRadius: '10px',
                         border: '1.5px solid #E4DACD',
                         outline: 'none',

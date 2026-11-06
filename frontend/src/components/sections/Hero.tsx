@@ -94,9 +94,48 @@ const FEATURE_RIBBON = [
   { icon: Users, title: 'Healthy Choice', subtitle: 'for Families' }
 ];
 
-export default function Hero() {
+function mapRawSlides(data: any[]): HeroSlide[] {
+  return data
+    .filter((s: any) => s.isActive !== false)
+    .map((s: any) => ({
+      id: s.id,
+      name: s.name,
+      subtitle: s.subtitle || 'PURE PEANUT BUTTER',
+      titleLine1: s.titleLine1 || 'Creamy. Roasted.',
+      titleLine2: s.titleLine2 || 'Protein Rich.',
+      description: s.description || 'Fuel your fitness, work, and daily life with the natural power of real peanuts.',
+      bannerImage: s.bannerImage || '/images/hero-bg-dark-chocolate.jpg',
+      buttonText: s.buttonText || 'Shop Now',
+      buttonLink: s.buttonLink || '/shop',
+      sampleButtonText: s.sampleButtonText || 'Book 50g Sample',
+      badges: [
+        { icon: Dumbbell, label: s.badge1 || 'HIGH\nPROTEIN' },
+        { icon: Leaf, label: s.badge2 || 'NO ADDED\nSUGAR' },
+        { icon: ShieldCheck, label: s.badge3 || '100%\nNATURAL' }
+      ]
+    }));
+}
+
+interface HeroProps {
+  initialSlides?: any[];
+}
+
+export default function Hero({ initialSlides }: HeroProps) {
   const { openSampleModal } = useCart();
-  const [slides, setSlides] = useState<HeroSlide[]>(HERO_SLIDES);
+  const [slides, setSlides] = useState<HeroSlide[]>(() => {
+    if (initialSlides && initialSlides.length > 0) {
+      const mapped = mapRawSlides(initialSlides);
+      if (mapped.length > 0) return mapped;
+    }
+    return HERO_SLIDES;
+  });
+
+  useEffect(() => {
+    if (initialSlides && initialSlides.length > 0) {
+      const mapped = mapRawSlides(initialSlides);
+      if (mapped.length > 0) setSlides(mapped);
+    }
+  }, [initialSlides]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -107,7 +146,7 @@ export default function Hero() {
       try {
         const timestamp = Date.now();
         let res = await fetch(`/api/slides?_t=${timestamp}`, { cache: 'no-store' });
-        if (!res.ok) res = await fetch(`http://localhost:5000/api/slides?_t=${timestamp}`, { cache: 'no-store' });
+        if (!res.ok) res = await fetch(`https://nuttryx.onrender.com/api/slides?_t=${timestamp}`, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
           if (json.success && Array.isArray(json.data) && json.data.length > 0) {

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { OrderModel } from '../models/Order.model';
 import { SampleModel } from '../models/Sample.model';
 import { Order, SampleRequest } from '../types';
@@ -45,12 +46,14 @@ export class OrderService {
   }
 
   async updateOrderStatus(id: string, status: Order['status']): Promise<Order | null> {
-    const updated = await OrderModel.findOneAndUpdate({ id }, { status }, { returnDocument: 'after' }).lean();
+    const query = mongoose.isValidObjectId(id) ? { $or: [{ id }, { _id: id }] } : { id };
+    const updated = await OrderModel.findOneAndUpdate(query, { $set: { status } }, { new: true }).lean();
     return updated as unknown as Order | null;
   }
 
   async updateSampleStatus(id: string, status: 'pending' | 'dispatched' | 'delivered'): Promise<SampleRequest | null> {
-    const updated = await SampleModel.findOneAndUpdate({ id }, { status }, { returnDocument: 'after' }).lean();
+    const query = mongoose.isValidObjectId(id) ? { $or: [{ id }, { _id: id }] } : { id };
+    const updated = await SampleModel.findOneAndUpdate(query, { $set: { status } }, { new: true }).lean();
     return updated as unknown as SampleRequest | null;
   }
 

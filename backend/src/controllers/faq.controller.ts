@@ -148,7 +148,7 @@ export class FaqController {
             ...(isActive !== undefined && { isActive: Boolean(isActive) })
           }
         },
-        { returnDocument: 'after' }
+        { new: true }
       );
 
       if (!updated) {

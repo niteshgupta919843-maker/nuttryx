@@ -259,7 +259,7 @@ export class AuthService {
           ...(data.pincode !== undefined && { pincode: data.pincode.trim() })
         }
       },
-      { returnDocument: 'after' }
+      { new: true }
     );
 
     if (!updated) return null;

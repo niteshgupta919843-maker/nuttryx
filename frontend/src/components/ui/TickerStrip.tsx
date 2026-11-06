@@ -66,31 +66,63 @@ const DEFAULT_PILLARS: LifestylePillarItem[] = [
   }
 ];
 
-export default function TickerStrip() {
+interface TickerStripProps {
+  initialTicker?: string[];
+  initialLifestyle?: any;
+}
+
+export default function TickerStrip({ initialTicker, initialLifestyle }: TickerStripProps) {
   const [activeTab, setActiveTab] = useState(0);
-  const [marqueeItems, setMarqueeItems] = useState<string[]>([
-    '🔥 100% Slow Roasted Saurashtra Peanuts',
-    '💪 30g Pure Plant Protein',
-    '🚫 Zero Added Refined Sugar',
-    '🌿 Zero Palm Oil or Trans Fats',
-    '🌱 100% Pure Vegetarian Certified',
-    '🚚 Free Express Shipping Over ₹499',
-    '🎁 Free 50g Sample with Every Order',
-    '🇮🇳 Made with Pride in India'
-  ]);
+  const [marqueeItems, setMarqueeItems] = useState<string[]>(() => {
+    if (initialTicker && initialTicker.length > 0) return initialTicker;
+    return [
+      '🔥 100% Slow Roasted Saurashtra Peanuts',
+      '💪 30g Pure Plant Protein',
+      '🚫 Zero Added Refined Sugar',
+      '🌿 Zero Palm Oil or Trans Fats',
+      '🌱 100% Pure Vegetarian Certified',
+      '🚚 Free Express Shipping Over ₹499',
+      '🎁 Free 50g Sample with Every Order',
+      '🇮🇳 Made with Pride in India'
+    ];
+  });
 
   // Lifestyle Section State
-  const [lifestyleBadge, setLifestyleBadge] = useState('Built For Every Lifestyle');
-  const [lifestyleHeading, setLifestyleHeading] = useState('Who Is NUTTRYX Crafted For?');
-  const [lifestyleDesc, setLifestyleDesc] = useState('From high-performance gym workouts to busy laptop desks and school lunchboxes, our pure peanut butter fuels your daily journey.');
-  const [pillars, setPillars] = useState<LifestylePillarItem[]>(DEFAULT_PILLARS);
+  const [lifestyleBadge, setLifestyleBadge] = useState(() => initialLifestyle?.badge || 'Built For Every Lifestyle');
+  const [lifestyleHeading, setLifestyleHeading] = useState(() => initialLifestyle?.heading || 'Who Is NUTTRYX Crafted For?');
+  const [lifestyleDesc, setLifestyleDesc] = useState(() => initialLifestyle?.description ||
+    'From high-performance gym workouts to busy laptop desks and school lunchboxes, our pure peanut butter fuels your daily journey.'
+  );
+  const [pillars, setPillars] = useState<LifestylePillarItem[]>(() => {
+    if (initialLifestyle && Array.isArray(initialLifestyle.pillars) && initialLifestyle.pillars.length > 0) {
+      const active = initialLifestyle.pillars.filter((p: LifestylePillarItem) => p.isActive !== false);
+      if (active.length > 0) return active;
+    }
+    return DEFAULT_PILLARS;
+  });
+
+  useEffect(() => {
+    if (initialTicker && initialTicker.length > 0) setMarqueeItems(initialTicker);
+  }, [initialTicker]);
+
+  useEffect(() => {
+    if (initialLifestyle) {
+      if (initialLifestyle.badge) setLifestyleBadge(initialLifestyle.badge);
+      if (initialLifestyle.heading) setLifestyleHeading(initialLifestyle.heading);
+      if (initialLifestyle.description) setLifestyleDesc(initialLifestyle.description);
+      if (Array.isArray(initialLifestyle.pillars) && initialLifestyle.pillars.length > 0) {
+        const active = initialLifestyle.pillars.filter((p: LifestylePillarItem) => p.isActive !== false);
+        setPillars(active.length > 0 ? active : initialLifestyle.pillars);
+      }
+    }
+  }, [initialLifestyle]);
 
   useEffect(() => {
     const fetchTicker = async () => {
       try {
         const timestamp = Date.now();
         let res = await fetch(`/api/ticker?_t=${timestamp}`, { cache: 'no-store' });
-        if (!res.ok) res = await fetch(`http://localhost:5000/api/ticker?_t=${timestamp}`, { cache: 'no-store' });
+        if (!res.ok) res = await fetch(`https://nuttryx.onrender.com/api/ticker?_t=${timestamp}`, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
           if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -106,7 +138,7 @@ export default function TickerStrip() {
       try {
         const timestamp = Date.now();
         let res = await fetch(`/api/lifestyle?_t=${timestamp}`, { cache: 'no-store' });
-        if (!res.ok) res = await fetch(`http://localhost:5000/api/lifestyle?_t=${timestamp}`, { cache: 'no-store' });
+        if (!res.ok) res = await fetch(`https://nuttryx.onrender.com/api/lifestyle?_t=${timestamp}`, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
           if (json.success && json.data) {
@@ -136,10 +168,23 @@ export default function TickerStrip() {
       fetchLifestyle();
     };
 
+    const onTickerUpdate = () => fetchTicker();
+    const onLifestyleUpdate = () => fetchLifestyle();
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'nuttryx_ticker_updated') fetchTicker();
+      if (e.key === 'nuttryx_lifestyle_updated') fetchLifestyle();
+    };
+
+    window.addEventListener('nuttryx_ticker_updated', onTickerUpdate);
+    window.addEventListener('nuttryx_lifestyle_updated', onLifestyleUpdate);
+    window.addEventListener('storage', onStorage);
     window.addEventListener('focus', onFocus);
 
     return () => {
       clearInterval(interval);
+      window.removeEventListener('nuttryx_ticker_updated', onTickerUpdate);
+      window.removeEventListener('nuttryx_lifestyle_updated', onLifestyleUpdate);
+      window.removeEventListener('storage', onStorage);
       window.removeEventListener('focus', onFocus);
     };
   }, []);

@@ -55,7 +55,7 @@ export default function Footer() {
         const timestamp = Date.now();
         let res = await fetch(`/api/settings?_t=${timestamp}`, { cache: 'no-store' });
         if (!res.ok) {
-          res = await fetch(`http://localhost:5000/api/settings?_t=${timestamp}`, { cache: 'no-store' });
+          res = await fetch(`https://nuttryx.onrender.com/api/settings?_t=${timestamp}`, { cache: 'no-store' });
         }
         if (res.ok) {
           const json = await res.json();

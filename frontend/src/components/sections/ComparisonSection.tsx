@@ -58,22 +58,50 @@ const DEFAULT_ROWS: ComparisonRow[] = [
   }
 ];
 
-export default function ComparisonSection() {
-  const [badge, setBadge] = useState('The Clean Label Revolution');
-  const [heading, setHeading] = useState('Why NUTTRYX Wins Hands Down');
-  const [description, setDescription] = useState(
+interface ComparisonSectionProps {
+  initialBenefit?: any;
+}
+
+export default function ComparisonSection({ initialBenefit }: ComparisonSectionProps) {
+  const [badge, setBadge] = useState(() => initialBenefit?.badge || 'The Clean Label Revolution');
+  const [heading, setHeading] = useState(() => initialBenefit?.heading || 'Why NUTTRYX Wins Hands Down');
+  const [description, setDescription] = useState(() => initialBenefit?.description ||
     'We started NUTTRYX because Indian fitness enthusiasts and families deserve genuine, unadulterated peanut butter without toxic palm oil and excessive sugars.'
   );
-  const [footerBanner, setFooterBanner] = useState(
+  const [footerBanner, setFooterBanner] = useState(() => initialBenefit?.footerBanner ||
     'Certified under FSSAI regulations and tested in NABL accredited food testing laboratories.'
   );
-  const [footerLinkText, setFooterLinkText] = useState('Try Pure Taste →');
-  const [footerLinkUrl, setFooterLinkUrl] = useState('#products');
-  const [rows, setRows] = useState<ComparisonRow[]>(DEFAULT_ROWS);
+  const [footerLinkText, setFooterLinkText] = useState(() => initialBenefit?.footerLinkText || 'Try Pure Taste →');
+  const [footerLinkUrl, setFooterLinkUrl] = useState(() => initialBenefit?.footerLinkUrl || '#products');
+  const [rows, setRows] = useState<ComparisonRow[]>(() => {
+    if (initialBenefit && Array.isArray(initialBenefit.rows) && initialBenefit.rows.length > 0) {
+      const active = initialBenefit.rows.filter((r: ComparisonRow) => r.isActive !== false);
+      if (active.length > 0) return active;
+    }
+    return DEFAULT_ROWS;
+  });
+
+  useEffect(() => {
+    if (initialBenefit) {
+      if (initialBenefit.badge) setBadge(initialBenefit.badge);
+      if (initialBenefit.heading) setHeading(initialBenefit.heading);
+      if (initialBenefit.description) setDescription(initialBenefit.description);
+      if (initialBenefit.footerBanner) setFooterBanner(initialBenefit.footerBanner);
+      if (initialBenefit.footerLinkText) setFooterLinkText(initialBenefit.footerLinkText);
+      if (initialBenefit.footerLinkUrl) setFooterLinkUrl(initialBenefit.footerLinkUrl);
+      if (Array.isArray(initialBenefit.rows) && initialBenefit.rows.length > 0) {
+        const active = initialBenefit.rows.filter((r: ComparisonRow) => r.isActive !== false);
+        setRows(active.length > 0 ? active : initialBenefit.rows);
+      }
+    }
+  }, [initialBenefit]);
 
   const fetchBenefitData = useCallback(async () => {
     try {
-      const res = await fetch('/api/benefit', { cache: 'no-store' });
+      let res = await fetch(`/api/benefit?_t=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) {
+        res = await fetch(`https://nuttryx.onrender.com/api/benefit?_t=${Date.now()}`, { cache: 'no-store' });
+      }
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data) {
@@ -103,8 +131,10 @@ export default function ComparisonSection() {
 
     window.addEventListener('nuttryx_benefit_updated', handleUpdate);
     window.addEventListener('storage', handleUpdate);
+    const interval = setInterval(fetchBenefitData, 10000);
 
     return () => {
+      clearInterval(interval);
       window.removeEventListener('nuttryx_benefit_updated', handleUpdate);
       window.removeEventListener('storage', handleUpdate);
     };

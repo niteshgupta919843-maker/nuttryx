@@ -4,13 +4,41 @@ import React, { useState, useEffect } from 'react';
 import { FAQS } from '@/data/products';
 import { ChevronDown, HelpCircle, Sparkles, MessageCircle } from 'lucide-react';
 
-export default function FaqSection() {
+interface FaqSectionProps {
+  initialFaqs?: any[];
+}
+
+export default function FaqSection({ initialFaqs }: FaqSectionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
-  const [faqsList, setFaqsList] = useState<{ id?: string; q: string; a: string; category?: string }[]>(FAQS);
+  const [faqsList, setFaqsList] = useState<{ id?: string; q: string; a: string; category?: string }[]>(() => {
+    if (initialFaqs && initialFaqs.length > 0) {
+      return initialFaqs.map((f: any) => ({
+        id: f.id,
+        q: f.question,
+        a: f.answer,
+        category: f.category
+      }));
+    }
+    return FAQS;
+  });
+
+  useEffect(() => {
+    if (initialFaqs && initialFaqs.length > 0) {
+      setFaqsList(initialFaqs.map((f: any) => ({
+        id: f.id,
+        q: f.question,
+        a: f.answer,
+        category: f.category
+      })));
+    }
+  }, [initialFaqs]);
 
   const fetchLiveFaqs = async () => {
     try {
-      const res = await fetch(`/api/faqs?_t=${Date.now()}`, { cache: 'no-store' });
+      let res = await fetch(`/api/faqs?_t=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) {
+        res = await fetch(`https://nuttryx.onrender.com/api/faqs?_t=${Date.now()}`, { cache: 'no-store' });
+      }
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {

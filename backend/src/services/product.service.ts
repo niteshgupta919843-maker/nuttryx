@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { ProductModel } from '../models/Product.model';
 import { INITIAL_PRODUCTS } from '../data/products.data';
 import { Product } from '../types';
@@ -32,7 +33,10 @@ export class ProductService {
 
   async getProductById(id: string): Promise<Product | null> {
     try {
-      const product = await ProductModel.findOne({ id }).lean();
+      const query = mongoose.isValidObjectId(id)
+        ? { $or: [{ id }, { _id: id }] }
+        : { id };
+      const product = await ProductModel.findOne(query).lean();
       if (product) return product as unknown as Product;
     } catch (err) {
       console.warn('MongoDB query failed, using memory fallback', err);
@@ -46,13 +50,23 @@ export class ProductService {
   }
 
   async updateProduct(id: string, updateData: Partial<Product>): Promise<Product | null> {
-    const updated = await ProductModel.findOneAndUpdate({ id }, { $set: updateData }, { returnDocument: 'after' }).lean();
+    const query = mongoose.isValidObjectId(id)
+      ? { $or: [{ id }, { _id: id }] }
+      : { id };
+    const updated = await ProductModel.findOneAndUpdate(
+      query,
+      { $set: { ...updateData, id } },
+      { new: true, upsert: true }
+    ).lean();
     return updated as unknown as Product | null;
   }
 
   async deleteProduct(id: string): Promise<boolean> {
-    const result = await ProductModel.deleteOne({ id });
-    return result.deletedCount > 0;
+    const query = mongoose.isValidObjectId(id)
+      ? { $or: [{ id }, { _id: id }] }
+      : { id };
+    const result = await ProductModel.deleteOne(query);
+    return (result.deletedCount || 0) > 0;
   }
 }
 

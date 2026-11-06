@@ -37,7 +37,7 @@ export const PRODUCTS: Product[] = [
     reviewsCount: 1420,
     category: 'chocolate',
     sizes: [
-      { weight: '500g', price: 329, originalPrice: 429, inStock: true },
+      { weight: '500g', price: 279, originalPrice: 429, inStock: true },
       { weight: '1kg', price: 599, originalPrice: 799, inStock: true }
     ],
     nutrition: {

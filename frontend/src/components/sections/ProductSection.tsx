@@ -14,13 +14,27 @@ import {
   Check
 } from 'lucide-react';
 
-export default function ProductSection() {
+interface ProductSectionProps {
+  initialProducts?: Product[];
+}
+
+export default function ProductSection({ initialProducts }: ProductSectionProps) {
   const { addToCart, wishlist, toggleWishlist } = useCart();
 
   // Exclude bundle-trio, show authentic peanut butter jars
-  const [jarProducts, setJarProducts] = useState<Product[]>(
-    PRODUCTS.filter(p => p.id !== 'bundle-trio')
-  );
+  const [jarProducts, setJarProducts] = useState<Product[]>(() => {
+    if (initialProducts && initialProducts.length > 0) {
+      return initialProducts.filter(p => p.id !== 'bundle-trio');
+    }
+    return PRODUCTS.filter(p => p.id !== 'bundle-trio');
+  });
+
+  // Sync if server initialProducts update
+  useEffect(() => {
+    if (initialProducts && initialProducts.length > 0) {
+      setJarProducts(initialProducts.filter(p => p.id !== 'bundle-trio'));
+    }
+  }, [initialProducts]);
 
   // Selected size per product: { [productId]: '500g' | '1kg' }
   const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({});
@@ -64,6 +78,9 @@ export default function ProductSection() {
             const liveJars = json.data.filter((p: Product) => p.id !== 'bundle-trio');
             if (liveJars.length > 0) {
               setJarProducts(liveJars);
+              try {
+                localStorage.setItem('nuttryx_cached_products', JSON.stringify(liveJars));
+              } catch {}
             }
           }
         }

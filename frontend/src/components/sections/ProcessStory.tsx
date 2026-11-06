@@ -78,12 +78,46 @@ const DEFAULT_STORY: CraftStoryData = {
   ]
 };
 
-export default function ProcessStory() {
-  const [story, setStory] = useState<CraftStoryData>(DEFAULT_STORY);
+interface ProcessStoryProps {
+  initialCraft?: any;
+}
+
+export default function ProcessStory({ initialCraft }: ProcessStoryProps) {
+  const [story, setStory] = useState<CraftStoryData>(() => {
+    if (initialCraft) {
+      return {
+        badge: initialCraft.badge || DEFAULT_STORY.badge,
+        heading: initialCraft.heading || DEFAULT_STORY.heading,
+        description: initialCraft.description || DEFAULT_STORY.description,
+        steps: Array.isArray(initialCraft.steps) && initialCraft.steps.length > 0
+          ? initialCraft.steps.filter((s: CraftStepItem) => s.isActive !== false)
+          : DEFAULT_STORY.steps,
+        isActive: initialCraft.isActive !== false
+      };
+    }
+    return DEFAULT_STORY;
+  });
+
+  useEffect(() => {
+    if (initialCraft) {
+      setStory({
+        badge: initialCraft.badge || DEFAULT_STORY.badge,
+        heading: initialCraft.heading || DEFAULT_STORY.heading,
+        description: initialCraft.description || DEFAULT_STORY.description,
+        steps: Array.isArray(initialCraft.steps) && initialCraft.steps.length > 0
+          ? initialCraft.steps.filter((s: CraftStepItem) => s.isActive !== false)
+          : DEFAULT_STORY.steps,
+        isActive: initialCraft.isActive !== false
+      });
+    }
+  }, [initialCraft]);
 
   const fetchLiveCraft = async () => {
     try {
-      const res = await fetch(`/api/craft?_t=${Date.now()}`, { cache: 'no-store' });
+      let res = await fetch(`/api/craft?_t=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) {
+        res = await fetch(`https://nuttryx.onrender.com/api/craft?_t=${Date.now()}`, { cache: 'no-store' });
+      }
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data) {

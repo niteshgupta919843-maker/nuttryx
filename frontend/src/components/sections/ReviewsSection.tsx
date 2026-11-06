@@ -5,9 +5,22 @@ import { useCart } from '@/context/CartContext';
 import { Star, CheckCircle2, MessageSquareHeart, Loader2, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { INITIAL_50_REVIEWS, ReviewItem } from '@/data/reviews';
 
-export default function ReviewsSection() {
+interface ReviewsSectionProps {
+  initialReviews?: ReviewItem[];
+}
+
+export default function ReviewsSection({ initialReviews }: ReviewsSectionProps) {
   const { triggerToast } = useCart();
-  const [reviewsList, setReviewsList] = useState<ReviewItem[]>(INITIAL_50_REVIEWS);
+  const [reviewsList, setReviewsList] = useState<ReviewItem[]>(() => {
+    if (initialReviews && initialReviews.length > 0) return initialReviews;
+    return INITIAL_50_REVIEWS;
+  });
+
+  useEffect(() => {
+    if (initialReviews && initialReviews.length > 0) {
+      setReviewsList(initialReviews);
+    }
+  }, [initialReviews]);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -26,7 +39,10 @@ export default function ReviewsSection() {
 
   const fetchReviews = useCallback(async () => {
     try {
-      const res = await fetch(`/api/reviews?_t=${Date.now()}`, { cache: 'no-store' });
+      let res = await fetch(`/api/reviews?_t=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) {
+        res = await fetch(`https://nuttryx.onrender.com/api/reviews?_t=${Date.now()}`, { cache: 'no-store' });
+      }
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -47,8 +63,10 @@ export default function ReviewsSection() {
 
     window.addEventListener('nuttryx_reviews_updated', handleUpdate);
     window.addEventListener('storage', handleUpdate);
+    const interval = setInterval(fetchReviews, 10000);
 
     return () => {
+      clearInterval(interval);
       window.removeEventListener('nuttryx_reviews_updated', handleUpdate);
       window.removeEventListener('storage', handleUpdate);
     };
@@ -101,11 +119,18 @@ export default function ReviewsSection() {
         comment: newReview.comment.trim()
       };
 
-      const res = await fetch('/api/reviews', {
+      let res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      if (!res.ok) {
+        res = await fetch('https://nuttryx.onrender.com/api/reviews', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
 
       const json = await res.json();
       if (json.success && json.data) {

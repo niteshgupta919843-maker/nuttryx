@@ -139,9 +139,11 @@ function AccountContent() {
       let res: Response | null = null;
       try {
         res = await fetch(`/api/auth/orders?${queryParams.toString()}`, { cache: 'no-store' });
+        if (!res.ok) {
+          res = await fetch(`https://nuttryx.onrender.com/api/auth/orders?${queryParams.toString()}`, { cache: 'no-store' });
+        }
       } catch {
-        // Fallback to direct backend port if Next.js rewrite is delayed
-        res = await fetch(`http://localhost:5000/api/auth/orders?${queryParams.toString()}`, { cache: 'no-store' });
+        res = await fetch(`https://nuttryx.onrender.com/api/auth/orders?${queryParams.toString()}`, { cache: 'no-store' });
       }
 
       if (res && res.ok) {

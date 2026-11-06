@@ -64,7 +64,7 @@ export default function SampleModal() {
         })
       });
       if (!res.ok) {
-        await fetch('http://localhost:5000/api/samples', {
+        await fetch('https://nuttryx.onrender.com/api/samples', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

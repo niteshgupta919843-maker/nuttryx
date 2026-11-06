@@ -1,5 +1,5 @@
 import React from 'react';
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 import Hero from '@/components/sections/Hero';
 import ProductSection from '@/components/sections/ProductSection';
 import SpotlightBanner from '@/components/sections/SpotlightBanner';
@@ -8,24 +8,50 @@ import TickerStrip from '@/components/ui/TickerStrip';
 import ProcessStory from '@/components/sections/ProcessStory';
 import ReviewsSection from '@/components/sections/ReviewsSection';
 import FaqSection from '@/components/sections/FaqSection';
+import {
+  fetchServerProducts,
+  fetchServerSlides,
+  fetchServerFaqs,
+  fetchServerReviews,
+  fetchServerCraft,
+  fetchServerBenefit,
+  fetchServerTicker,
+  fetchServerLifestyle
+} from '@/lib/server-api';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 // Dynamically import below-the-fold interactive calculator to optimize TTI / initial hydration
-const ProteinCalculator = dynamic(() => import('@/components/sections/ProteinCalculator'), {
+const ProteinCalculator = nextDynamic(() => import('@/components/sections/ProteinCalculator'), {
   loading: () => <div style={{ minHeight: '400px' }} />
 });
 
-export default function Home() {
+export default async function Home() {
+  const [products, slides, faqs, reviews, craft, benefit, ticker, lifestyle] = await Promise.all([
+    fetchServerProducts(),
+    fetchServerSlides(),
+    fetchServerFaqs(),
+    fetchServerReviews(),
+    fetchServerCraft(),
+    fetchServerBenefit(),
+    fetchServerTicker(),
+    fetchServerLifestyle()
+  ]);
+
+  const darkChocolate = products.find(p => p.id === 'dark-chocolate');
+
   return (
     <>
-      <Hero />
-      <ProductSection />
-      <SpotlightBanner />
-      <ComparisonSection />
-      <TickerStrip />
+      <Hero initialSlides={slides} />
+      <ProductSection initialProducts={products} />
+      <SpotlightBanner initialProduct={darkChocolate} />
+      <ComparisonSection initialBenefit={benefit} />
+      <TickerStrip initialTicker={ticker} initialLifestyle={lifestyle} />
       <ProteinCalculator />
-      <ProcessStory />
-      <ReviewsSection />
-      <FaqSection />
+      <ProcessStory initialCraft={craft} />
+      <ReviewsSection initialReviews={reviews} />
+      <FaqSection initialFaqs={faqs} />
     </>
   );
 }

@@ -79,7 +79,7 @@ function TrackContent() {
     try {
       let res = await fetch(`/api/orders/track/${encodeURIComponent(clean)}`, { cache: 'no-store' });
       if (!res.ok) {
-        res = await fetch(`http://localhost:5000/api/orders/track/${encodeURIComponent(clean)}`, { cache: 'no-store' });
+        res = await fetch(`https://nuttryx.onrender.com/api/orders/track/${encodeURIComponent(clean)}`, { cache: 'no-store' });
       }
 
       const json = await res.json();

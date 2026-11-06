@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { PRODUCTS } from '@/data/products';
+import { Product, ProductSize } from '@/types';
 import { 
   ShoppingBag, 
   Sparkles, 
@@ -16,14 +17,46 @@ import {
   Plus
 } from 'lucide-react';
 
-export default function SpotlightBanner() {
-  const { addToCart, openSampleModal } = useCart();
-  const darkChocolateProduct = PRODUCTS.find(p => p.id === 'dark-chocolate') || PRODUCTS[0];
+interface SpotlightBannerProps {
+  initialProduct?: Product;
+}
 
-  const sizes = darkChocolateProduct.sizes && darkChocolateProduct.sizes.length > 0
+export default function SpotlightBanner({ initialProduct }: SpotlightBannerProps) {
+  const { addToCart, openSampleModal } = useCart();
+  const [darkChocolateProduct, setDarkChocolateProduct] = useState<Product>(
+    () => initialProduct || PRODUCTS.find(p => p.id === 'dark-chocolate') || PRODUCTS[0]
+  );
+
+  useEffect(() => {
+    if (initialProduct) {
+      setDarkChocolateProduct(initialProduct);
+    }
+  }, [initialProduct]);
+
+  useEffect(() => {
+    const syncProduct = () => {
+      try {
+        const cached = localStorage.getItem('nuttryx_cached_products');
+        if (cached) {
+          const list = JSON.parse(cached);
+          const found = list.find((p: Product) => p.id === 'dark-chocolate');
+          if (found) setDarkChocolateProduct(found);
+        }
+      } catch {}
+    };
+    syncProduct();
+    window.addEventListener('nuttryx_catalog_updated', syncProduct);
+    window.addEventListener('storage', syncProduct);
+    return () => {
+      window.removeEventListener('nuttryx_catalog_updated', syncProduct);
+      window.removeEventListener('storage', syncProduct);
+    };
+  }, []);
+
+  const sizes: ProductSize[] = darkChocolateProduct.sizes && darkChocolateProduct.sizes.length > 0
     ? darkChocolateProduct.sizes
     : [
-        { weight: '500g', price: 329, originalPrice: 429, inStock: true },
+        { weight: '500g', price: 279, originalPrice: 429, inStock: true },
         { weight: '1kg', price: 599, originalPrice: 799, inStock: true }
       ];
 
