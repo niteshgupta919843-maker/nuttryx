@@ -53,9 +53,10 @@ export default function ProductSection() {
   useEffect(() => {
     const fetchLiveCatalog = async () => {
       try {
-        let res = await fetch('/api/products', { cache: 'no-store' });
+        const timestamp = Date.now();
+        let res = await fetch(`/api/products?_t=${timestamp}`, { cache: 'no-store' });
         if (!res.ok) {
-          res = await fetch('http://localhost:5000/api/products', { cache: 'no-store' });
+          res = await fetch(`https://nuttryx.onrender.com/api/products?_t=${timestamp}`, { cache: 'no-store' });
         }
         if (res.ok) {
           const json = await res.json();

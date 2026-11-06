@@ -6,7 +6,9 @@ export class ProductController {
     try {
       const category = req.query.category as string | undefined;
       const products = await productService.getAllProducts(category);
-      res.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=120');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       res.status(200).json({
         success: true,
         count: products.length,

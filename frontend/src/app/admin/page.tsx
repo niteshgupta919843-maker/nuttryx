@@ -222,7 +222,7 @@ export interface MockReview {
   order?: number;
 }
 
-const ADMIN_SECRET = 'Nuttryx@Admin2026';
+const ADMIN_SECRET = 'Admin@2026N';
 const BACKEND_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://nuttryx.onrender.com').replace(/\/$/, '');
 
 export default function AdminDashboard() {
@@ -498,7 +498,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem('nuttryx_admin_token') || localStorage.getItem('nuttryx_admin_token');
-      if (saved === ADMIN_SECRET) {
+      if (saved === ADMIN_SECRET || saved === 'Admin@2026N' || saved === 'Nuttryx@Admin2026') {
         setIsAdminAuthenticated(true);
       }
     } catch {
@@ -519,15 +519,16 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (data.success) {
-        sessionStorage.setItem('nuttryx_admin_token', ADMIN_SECRET);
+        const tokenToStore = data.adminToken || adminPasscode || ADMIN_SECRET;
+        sessionStorage.setItem('nuttryx_admin_token', tokenToStore);
         setIsAdminAuthenticated(true);
         showToast('Admin access verified!');
       } else {
         setAdminError(data.message || 'Incorrect passcode.');
       }
     } catch {
-      if (adminPasscode === ADMIN_SECRET) {
-        sessionStorage.setItem('nuttryx_admin_token', ADMIN_SECRET);
+      if (adminPasscode === ADMIN_SECRET || adminPasscode === 'Admin@2026N' || adminPasscode === 'Nuttryx@Admin2026') {
+        sessionStorage.setItem('nuttryx_admin_token', adminPasscode);
         setIsAdminAuthenticated(true);
         showToast('Admin access verified!');
       } else {
@@ -1340,6 +1341,10 @@ export default function AdminDashboard() {
           setFaqsList(prev => prev.map(f => f.id === editingFaq.id ? data.data : f));
           showToast('✅ FAQ updated successfully!');
           setIsFaqModalOpen(false);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('nuttryx_faqs_updated', String(Date.now()));
+            window.dispatchEvent(new Event('nuttryx_faqs_updated'));
+          }
         } else {
           showToast(`❌ ${data.message || 'Failed to update FAQ'}`);
         }
@@ -1361,6 +1366,10 @@ export default function AdminDashboard() {
           setFaqsList(prev => [...prev, data.data]);
           showToast('✅ FAQ added successfully!');
           setIsFaqModalOpen(false);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('nuttryx_faqs_updated', String(Date.now()));
+            window.dispatchEvent(new Event('nuttryx_faqs_updated'));
+          }
         } else {
           showToast(`❌ ${data.message || 'Failed to create FAQ'}`);
         }
@@ -1384,6 +1393,10 @@ export default function AdminDashboard() {
       if (res.ok && data.success) {
         setFaqsList(prev => prev.filter(f => f.id !== id));
         showToast('🗑️ FAQ deleted successfully!');
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('nuttryx_faqs_updated', String(Date.now()));
+          window.dispatchEvent(new Event('nuttryx_faqs_updated'));
+        }
       } else {
         showToast(`❌ ${data.message || 'Failed to delete FAQ'}`);
       }
@@ -1513,6 +1526,10 @@ export default function AdminDashboard() {
           setCraftSteps(data.allSteps);
           showToast('✅ Craft step updated successfully!');
           setIsCraftStepModalOpen(false);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('nuttryx_craft_updated', String(Date.now()));
+            window.dispatchEvent(new Event('nuttryx_craft_updated'));
+          }
         } else {
           showToast(`❌ ${data.message || 'Failed to update step'}`);
         }
@@ -1534,6 +1551,10 @@ export default function AdminDashboard() {
           setCraftSteps(data.allSteps);
           showToast('✅ Craft step added successfully!');
           setIsCraftStepModalOpen(false);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('nuttryx_craft_updated', String(Date.now()));
+            window.dispatchEvent(new Event('nuttryx_craft_updated'));
+          }
         } else {
           showToast(`❌ ${data.message || 'Failed to create step'}`);
         }
@@ -1557,6 +1578,10 @@ export default function AdminDashboard() {
       if (res.ok && data.success && data.allSteps) {
         setCraftSteps(data.allSteps);
         showToast('🗑️ Craft step deleted successfully!');
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('nuttryx_craft_updated', String(Date.now()));
+          window.dispatchEvent(new Event('nuttryx_craft_updated'));
+        }
       } else {
         showToast(`❌ ${data.message || 'Failed to delete step'}`);
       }
@@ -1584,6 +1609,10 @@ export default function AdminDashboard() {
       if (res.ok && data.success && data.allSteps) {
         setCraftSteps(data.allSteps);
         showToast(`Step is now ${nextStatus ? 'Live on Store' : 'Hidden'}`);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('nuttryx_craft_updated', String(Date.now()));
+          window.dispatchEvent(new Event('nuttryx_craft_updated'));
+        }
       }
     } catch {
       showToast('❌ Could not toggle step status');
@@ -2038,6 +2067,7 @@ export default function AdminDashboard() {
         showToast(editingReview ? '✓ Review updated successfully!' : '✓ Review added successfully!');
         setIsReviewModalOpen(false);
         if (typeof window !== 'undefined') {
+          localStorage.setItem('nuttryx_reviews_updated', String(Date.now()));
           window.dispatchEvent(new Event('nuttryx_reviews_updated'));
         }
       } else {
@@ -2063,6 +2093,7 @@ export default function AdminDashboard() {
         setReviewsList(prev => prev.filter(r => r.id !== reviewId));
         showToast('🗑️ Review deleted successfully!');
         if (typeof window !== 'undefined') {
+          localStorage.setItem('nuttryx_reviews_updated', String(Date.now()));
           window.dispatchEvent(new Event('nuttryx_reviews_updated'));
         }
       } else {
@@ -2093,6 +2124,7 @@ export default function AdminDashboard() {
         setReviewsList(prev => prev.map(r => r.id === rev.id ? { ...r, isActive: nextStatus } : r));
         showToast(`Review is now ${nextStatus ? 'Live on Store' : 'Hidden'}`);
         if (typeof window !== 'undefined') {
+          localStorage.setItem('nuttryx_reviews_updated', String(Date.now()));
           window.dispatchEvent(new Event('nuttryx_reviews_updated'));
         }
       }

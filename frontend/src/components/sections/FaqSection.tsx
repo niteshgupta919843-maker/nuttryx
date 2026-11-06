@@ -8,10 +8,11 @@ export default function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const [faqsList, setFaqsList] = useState<{ id?: string; q: string; a: string; category?: string }[]>(FAQS);
 
-  useEffect(() => {
-    fetch('/api/faqs')
-      .then(res => res.json())
-      .then(json => {
+  const fetchLiveFaqs = async () => {
+    try {
+      const res = await fetch(`/api/faqs?_t=${Date.now()}`, { cache: 'no-store' });
+      if (res.ok) {
+        const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
           setFaqsList(json.data.map((f: any) => ({
             id: f.id,
@@ -20,10 +21,32 @@ export default function FaqSection() {
             category: f.category
           })));
         }
-      })
-      .catch(() => {
-        // Fallback to static FAQS
-      });
+      }
+    } catch {
+      // Fallback to static FAQS
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveFaqs();
+
+    const onUpdate = () => fetchLiveFaqs();
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'nuttryx_faqs_updated') fetchLiveFaqs();
+    };
+
+    window.addEventListener('focus', onUpdate);
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('nuttryx_faqs_updated', onUpdate);
+
+    const interval = setInterval(fetchLiveFaqs, 10000);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', onUpdate);
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('nuttryx_faqs_updated', onUpdate);
+    };
   }, []);
 
   const toggleAccordion = (idx: number) => {

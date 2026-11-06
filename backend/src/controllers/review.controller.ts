@@ -8,8 +8,8 @@ export class ReviewController {
     try {
       let reviews = await ReviewModel.find().sort({ order: 1, createdAt: -1 });
 
-      if (reviews.length < 50) {
-        // Upsert all 50 reviews so the database has the complete 50 reviews
+      if (reviews.length === 0) {
+        // Initial seed only if collection is completely empty
         for (const rev of INITIAL_50_REVIEWS) {
           await ReviewModel.updateOne({ id: rev.id }, { $setOnInsert: rev }, { upsert: true });
         }

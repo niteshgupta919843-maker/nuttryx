@@ -81,10 +81,11 @@ const DEFAULT_STORY: CraftStoryData = {
 export default function ProcessStory() {
   const [story, setStory] = useState<CraftStoryData>(DEFAULT_STORY);
 
-  useEffect(() => {
-    fetch('/api/craft')
-      .then(res => res.json())
-      .then(json => {
+  const fetchLiveCraft = async () => {
+    try {
+      const res = await fetch(`/api/craft?_t=${Date.now()}`, { cache: 'no-store' });
+      if (res.ok) {
+        const json = await res.json();
         if (json.success && json.data) {
           setStory({
             badge: json.data.badge || DEFAULT_STORY.badge,
@@ -96,10 +97,32 @@ export default function ProcessStory() {
             isActive: json.data.isActive !== false
           });
         }
-      })
-      .catch(() => {
-        // Keep fallback data
-      });
+      }
+    } catch {
+      // Keep fallback data
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveCraft();
+
+    const onUpdate = () => fetchLiveCraft();
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'nuttryx_craft_updated') fetchLiveCraft();
+    };
+
+    window.addEventListener('focus', onUpdate);
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('nuttryx_craft_updated', onUpdate);
+
+    const interval = setInterval(fetchLiveCraft, 10000);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', onUpdate);
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('nuttryx_craft_updated', onUpdate);
+    };
   }, []);
 
   if (story.isActive === false) return null;
