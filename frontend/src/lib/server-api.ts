@@ -138,3 +138,20 @@ export async function fetchServerLifestyle(): Promise<any | null> {
   return null;
 }
 
+export async function fetchServerSettings(): Promise<any | null> {
+  try {
+    const res = await fetch(`${BACKEND_BASE}/api/settings?_t=${Date.now()}`, {
+      cache: 'no-store'
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && json.data) {
+        return json.data;
+      }
+    }
+  } catch (err) {
+    console.error('Server fetch settings error:', err);
+  }
+  return null;
+}
+

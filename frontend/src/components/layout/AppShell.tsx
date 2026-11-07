@@ -14,7 +14,15 @@ const SampleModal = dynamic(() => import('@/components/modals/SampleModal'), { s
 const CheckoutModal = dynamic(() => import('@/components/modals/CheckoutModal'), { ssr: false });
 const AuthModal = dynamic(() => import('@/components/modals/AuthModal'), { ssr: false });
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
+export default function AppShell({ 
+  children,
+  initialSettings,
+  initialProducts
+}: { 
+  children: React.ReactNode;
+  initialSettings?: any;
+  initialProducts?: any[];
+}) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith('/admin');
   const isLoginPage = pathname?.startsWith('/login');
@@ -33,7 +41,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <>
       <Header />
       <main>{children}</main>
-      <Footer />
+      <Footer initialSettings={initialSettings} initialProducts={initialProducts} />
       <CartDrawer />
       <QuickViewModal />
       <SampleModal />

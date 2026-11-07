@@ -1355,7 +1355,8 @@ export default function AdminDashboard() {
         showToast('✓ Factory & Support settings saved successfully!');
         if (typeof window !== 'undefined') {
           localStorage.setItem('nuttryx_settings_updated', String(Date.now()));
-          window.dispatchEvent(new Event('nuttryx_settings_updated'));
+          localStorage.setItem('nuttryx_store_settings', JSON.stringify(settingsToSave));
+          window.dispatchEvent(new CustomEvent('nuttryx_settings_updated', { detail: settingsToSave }));
         }
       } else {
         showToast('⚠️ Could not save settings to database');
@@ -6224,6 +6225,12 @@ export default function AdminDashboard() {
                         <Mail size={16} color="#D9822B" style={{ flexShrink: 0 }} />
                         <span>{storeSettings.supportEmail}</span>
                       </div>
+                      {storeSettings.whatsappNumber && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#25D366', fontWeight: 700, fontSize: '0.82rem' }}>
+                          <span style={{ fontSize: '0.85rem' }}>💬</span>
+                          <span>WhatsApp: {storeSettings.whatsappNumber}</span>
+                        </div>
+                      )}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#10B981', fontWeight: 700, fontSize: '0.82rem' }}>
                         <ShieldCheck size={16} color="#10B981" />
                         <span>FSSAI Lic. No: {storeSettings.fssaiNumber}</span>

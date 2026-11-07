@@ -11,7 +11,8 @@ import {
   PhoneCall, 
   Mail, 
   MapPin, 
-  Heart
+  Heart,
+  MessageCircle
 } from 'lucide-react';
 
 export interface StoreSettings {
@@ -37,17 +38,57 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   supportHours: '(Mon - Sat, 10am - 7pm)',
   supportEmail: 'care@nuttryx.com',
   fssaiNumber: '11524999000123',
-  instagramUrl: 'https://instagram.com',
-  facebookUrl: 'https://facebook.com',
-  twitterUrl: 'https://twitter.com',
-  youtubeUrl: 'https://youtube.com',
+  instagramUrl: 'https://instagram.com/nuttryx',
+  facebookUrl: 'https://facebook.com/nuttryx',
+  twitterUrl: 'https://twitter.com/nuttryx',
+  youtubeUrl: 'https://youtube.com/@nuttryx',
   whatsappNumber: '+91 98765 43210'
 };
 
-export default function Footer() {
+export default function Footer({
+  initialSettings,
+  initialProducts
+}: {
+  initialSettings?: StoreSettings | null;
+  initialProducts?: any[];
+}) {
   const { triggerToast } = useCart();
   const [email, setEmail] = useState('');
-  const [settings, setSettings] = useState<StoreSettings>(DEFAULT_STORE_SETTINGS);
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [settings, setSettings] = useState<StoreSettings>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('nuttryx_store_settings');
+        if (cached) return { ...DEFAULT_STORE_SETTINGS, ...JSON.parse(cached) };
+      } catch {}
+    }
+    return initialSettings ? { ...DEFAULT_STORE_SETTINGS, ...initialSettings } : DEFAULT_STORE_SETTINGS;
+  });
+
+  const [products, setProducts] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('nuttryx_catalog_cache');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return initialProducts || [];
+  });
+
+  useEffect(() => {
+    if (initialSettings) {
+      setSettings(prev => ({ ...prev, ...initialSettings }));
+    }
+  }, [initialSettings]);
+
+  useEffect(() => {
+    if (initialProducts && initialProducts.length > 0) {
+      setProducts(initialProducts);
+    }
+  }, [initialProducts]);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -64,6 +105,9 @@ export default function Footer() {
               ...prev,
               ...json.data
             }));
+            try {
+              localStorage.setItem('nuttryx_store_settings', JSON.stringify(json.data));
+            } catch {}
           }
         }
       } catch {
@@ -75,27 +119,93 @@ export default function Footer() {
     const interval = setInterval(fetchSettings, 10000);
     const onFocus = () => fetchSettings();
     const onStorage = (e: StorageEvent) => {
-      if (e.key === 'nuttryx_settings_updated') fetchSettings();
+      if (e.key === 'nuttryx_settings_updated' || e.key === 'nuttryx_store_settings') {
+        try {
+          const cached = localStorage.getItem('nuttryx_store_settings');
+          if (cached) {
+            setSettings(prev => ({ ...prev, ...JSON.parse(cached) }));
+            return;
+          }
+        } catch {}
+        fetchSettings();
+      }
+      if (e.key === 'nuttryx_catalog_updated' || e.key === 'nuttryx_catalog_cache') {
+        try {
+          const cached = localStorage.getItem('nuttryx_catalog_cache');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) setProducts(parsed);
+          }
+        } catch {}
+      }
     };
-    const onCustom = () => fetchSettings();
+    const onCustom = (e: any) => {
+      if (e?.detail) {
+        setSettings(prev => ({ ...prev, ...e.detail }));
+      } else {
+        try {
+          const cached = localStorage.getItem('nuttryx_store_settings');
+          if (cached) {
+            setSettings(prev => ({ ...prev, ...JSON.parse(cached) }));
+            return;
+          }
+        } catch {}
+        fetchSettings();
+      }
+    };
+    const onCatalogCustom = () => {
+      try {
+        const cached = localStorage.getItem('nuttryx_catalog_cache');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) setProducts(parsed);
+        }
+      } catch {}
+    };
 
     window.addEventListener('focus', onFocus);
     window.addEventListener('storage', onStorage);
     window.addEventListener('nuttryx_settings_updated', onCustom);
+    window.addEventListener('nuttryx_catalog_updated', onCatalogCustom);
 
     return () => {
       clearInterval(interval);
       window.removeEventListener('focus', onFocus);
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('nuttryx_settings_updated', onCustom);
+      window.removeEventListener('nuttryx_catalog_updated', onCatalogCustom);
     };
   }, []);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    triggerToast('🎉 Welcome to the NUTTRYX Club! Your 15% discount coupon has been sent.');
-    setEmail('');
+    if (!email || !email.includes('@')) return;
+    setIsSubscribing(true);
+    try {
+      let res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      if (!res.ok) {
+        res = await fetch('https://nuttryx.onrender.com/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+      }
+      if (res.ok) {
+        triggerToast('🎉 Welcome to the NUTTRYX Club! Your 15% discount coupon NUTTRYX15 has been issued.');
+      } else {
+        triggerToast('🎉 Welcome to the NUTTRYX Club! Use coupon NUTTRYX15 for 15% off.');
+      }
+      setEmail('');
+    } catch {
+      triggerToast('🎉 Welcome to the NUTTRYX Club! Use coupon NUTTRYX15 for 15% off.');
+      setEmail('');
+    } finally {
+      setIsSubscribing(false);
+    }
   };
 
   return (
@@ -302,26 +412,38 @@ export default function Footer() {
                   🚚 Live Order Tracking
                 </Link>
               </li>
-              <li>
-                <Link href="/#products" style={{ transition: 'color 0.2s', color: '#D5C4B8', textDecoration: 'none' }}>
-                  🍫 Dark Chocolate Peanut Butter
-                </Link>
-              </li>
-              <li>
-                <Link href="/#products" style={{ transition: 'color 0.2s', color: '#D5C4B8', textDecoration: 'none' }}>
-                  🥜 Crunchy Roasted Peanut Butter
-                </Link>
-              </li>
-              <li>
-                <Link href="/#products" style={{ transition: 'color 0.2s', color: '#D5C4B8', textDecoration: 'none' }}>
-                  ✨ Natural Creamy Peanut Butter
-                </Link>
-              </li>
-              <li>
-                <Link href="/#products" style={{ transition: 'color 0.2s', color: '#D5C4B8', textDecoration: 'none' }}>
-                  🎁 Discovery Trio Bundle Box
-                </Link>
-              </li>
+              {products && products.length > 0 ? (
+                products.map((p) => (
+                  <li key={p.id}>
+                    <Link 
+                      href={`/shop?flavour=${p.id}`} 
+                      style={{ transition: 'color 0.2s', color: '#D5C4B8', textDecoration: 'none' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#FFD199')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '#D5C4B8')}
+                    >
+                      🥜 {p.name.replace(/^NUTTRYX\s+/i, '')}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li>
+                    <Link href="/#products" style={{ transition: 'color 0.2s', color: '#D5C4B8', textDecoration: 'none' }}>
+                      🍫 Dark Chocolate Peanut Butter
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/#products" style={{ transition: 'color 0.2s', color: '#D5C4B8', textDecoration: 'none' }}>
+                      🥜 Crunchy Roasted Peanut Butter
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/#products" style={{ transition: 'color 0.2s', color: '#D5C4B8', textDecoration: 'none' }}>
+                      ✨ Natural Creamy Peanut Butter
+                    </Link>
+                  </li>
+                </>
+              )}
               <li>
                 <Link href="/#nutrition" style={{ transition: 'color 0.2s', color: '#D5C4B8', textDecoration: 'none' }}>
                   📊 Daily Protein Calculator
@@ -447,6 +569,36 @@ export default function Footer() {
                 <Mail size={16} color="#D9822B" style={{ flexShrink: 0 }} />
                 <span>{settings.supportEmail}</span>
               </a>
+
+              {/* WhatsApp Support link */}
+              {settings.whatsappNumber && (
+                <a 
+                  href={`https://wa.me/${settings.whatsappNumber.replace(/[^\d]/g, '')}?text=${encodeURIComponent('Hello NUTTRYX Team, I would like to inquire about pure peanut butter.')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Chat with Nuttryx Support on WhatsApp"
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '10px', 
+                    color: '#25D366', 
+                    textDecoration: 'none', 
+                    transition: 'all 0.2s ease',
+                    fontWeight: 600
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#4ADE80';
+                    e.currentTarget.style.transform = 'translateX(2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#25D366';
+                    e.currentTarget.style.transform = 'translateX(0)';
+                  }}
+                >
+                  <MessageCircle size={16} color="#25D366" style={{ flexShrink: 0 }} />
+                  <span>WhatsApp: {settings.whatsappNumber}</span>
+                </a>
+              )}
 
               {/* FSSAI Registration badge */}
               <div 

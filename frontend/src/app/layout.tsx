@@ -4,6 +4,7 @@ import { Outfit, Plus_Jakarta_Sans, Caveat } from 'next/font/google';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import AppShell from '@/components/layout/AppShell';
+import { fetchServerSettings, fetchServerProducts } from '@/lib/server-api';
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -33,6 +34,8 @@ export const viewport = {
   themeColor: '#20100A'
 };
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'NUTTRYX™ | Pure Peanut Butter - Creamy, Roasted & Protein Rich',
   description: '100% slow-roasted Gujarat bold peanuts. 30g pure plant protein, zero added refined sugar, zero palm oil, 100% vegetarian. Fuel your fitness, study, and daily life.',
@@ -53,17 +56,22 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [initialSettings, initialProducts] = await Promise.all([
+    fetchServerSettings(),
+    fetchServerProducts()
+  ]);
+
   return (
     <html lang="en" className={`${outfit.variable} ${plusJakartaSans.variable} ${caveat.variable}`}>
       <body>
         <AuthProvider>
           <CartProvider>
-            <AppShell>{children}</AppShell>
+            <AppShell initialSettings={initialSettings} initialProducts={initialProducts}>{children}</AppShell>
           </CartProvider>
         </AuthProvider>
       </body>

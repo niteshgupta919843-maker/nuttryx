@@ -5,6 +5,9 @@ const router = Router();
 
 router.get('/', (req, res, next) => settingsController.get(req, res, next));
 router.put('/', (req, res, next) => settingsController.update(req, res, next));
+router.post('/', (req, res, next) => settingsController.update(req, res, next));
+router.patch('/', (req, res, next) => settingsController.update(req, res, next));
+router.post('/subscribe', (req, res, next) => settingsController.subscribe(req, res, next));
 
 export default router;
 
