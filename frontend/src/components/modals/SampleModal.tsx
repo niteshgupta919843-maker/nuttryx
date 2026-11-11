@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { getBackendBaseUrl } from '@/lib/api';
 import { X, Gift, CheckCircle2, Send, Mail, MapPin } from 'lucide-react';
 
 export default function SampleModal() {
@@ -64,7 +65,7 @@ export default function SampleModal() {
         })
       });
       if (!res.ok) {
-        await fetch('https://nuttryx.onrender.com/api/samples', {
+        await fetch(`${getBackendBaseUrl()}/api/samples`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

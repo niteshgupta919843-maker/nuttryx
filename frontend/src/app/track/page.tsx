@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { getBackendBaseUrl } from '@/lib/api';
 import { 
   Package, 
   Truck, 
@@ -79,7 +80,7 @@ function TrackContent() {
     try {
       let res = await fetch(`/api/orders/track/${encodeURIComponent(clean)}`, { cache: 'no-store' });
       if (!res.ok) {
-        res = await fetch(`https://nuttryx.onrender.com/api/orders/track/${encodeURIComponent(clean)}`, { cache: 'no-store' });
+        res = await fetch(`${getBackendBaseUrl()}/api/orders/track/${encodeURIComponent(clean)}`, { cache: 'no-store' });
       }
 
       const json = await res.json();

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
+import { getBackendBaseUrl } from '@/lib/api';
 import { 
   PackageCheck, 
   User, 
@@ -140,10 +141,10 @@ function AccountContent() {
       try {
         res = await fetch(`/api/auth/orders?${queryParams.toString()}`, { cache: 'no-store' });
         if (!res.ok) {
-          res = await fetch(`https://nuttryx.onrender.com/api/auth/orders?${queryParams.toString()}`, { cache: 'no-store' });
+          res = await fetch(`${getBackendBaseUrl()}/api/auth/orders?${queryParams.toString()}`, { cache: 'no-store' });
         }
       } catch {
-        res = await fetch(`https://nuttryx.onrender.com/api/auth/orders?${queryParams.toString()}`, { cache: 'no-store' });
+        res = await fetch(`${getBackendBaseUrl()}/api/auth/orders?${queryParams.toString()}`, { cache: 'no-store' });
       }
 
       if (res && res.ok) {

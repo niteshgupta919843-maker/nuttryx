@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { getBackendBaseUrl } from '@/lib/api';
 import { 
   Flame, 
   ShieldCheck, 
@@ -116,7 +117,7 @@ export default function ProcessStory({ initialCraft }: ProcessStoryProps) {
     try {
       let res = await fetch(`/api/craft?_t=${Date.now()}`, { cache: 'no-store' });
       if (!res.ok) {
-        res = await fetch(`https://nuttryx.onrender.com/api/craft?_t=${Date.now()}`, { cache: 'no-store' });
+        res = await fetch(`${getBackendBaseUrl()}/api/craft?_t=${Date.now()}`, { cache: 'no-store' });
       }
       if (res.ok) {
         const json = await res.json();

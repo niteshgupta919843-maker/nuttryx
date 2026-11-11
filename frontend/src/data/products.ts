@@ -23,6 +23,8 @@ export interface Product {
   };
   ingredients: string;
   features: string[];
+  price?: number;
+  originalPrice?: number;
 }
 
 export const PRODUCTS: Product[] = [

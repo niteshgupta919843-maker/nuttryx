@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useCart } from '@/context/CartContext';
+import { getBackendBaseUrl } from '@/lib/api';
 import { Star, CheckCircle2, MessageSquareHeart, Loader2, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { INITIAL_50_REVIEWS, ReviewItem } from '@/data/reviews';
 
@@ -41,7 +42,7 @@ export default function ReviewsSection({ initialReviews }: ReviewsSectionProps) 
     try {
       let res = await fetch(`/api/reviews?_t=${Date.now()}`, { cache: 'no-store' });
       if (!res.ok) {
-        res = await fetch(`https://nuttryx.onrender.com/api/reviews?_t=${Date.now()}`, { cache: 'no-store' });
+        res = await fetch(`${getBackendBaseUrl()}/api/reviews?_t=${Date.now()}`, { cache: 'no-store' });
       }
       if (res.ok) {
         const json = await res.json();
@@ -125,7 +126,7 @@ export default function ReviewsSection({ initialReviews }: ReviewsSectionProps) 
         body: JSON.stringify(payload)
       });
       if (!res.ok) {
-        res = await fetch('https://nuttryx.onrender.com/api/reviews', {
+        res = await fetch(`${getBackendBaseUrl()}/api/reviews`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)

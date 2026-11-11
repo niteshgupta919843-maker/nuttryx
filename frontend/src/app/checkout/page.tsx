@@ -1099,7 +1099,7 @@ export default function CheckoutPage() {
                         <img 
                           src={item.product.image} 
                           alt={item.product.name} 
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }} 
                         />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>

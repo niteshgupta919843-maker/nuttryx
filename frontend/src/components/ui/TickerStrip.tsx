@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { getBackendBaseUrl } from '@/lib/api';
 import { 
   Dumbbell, 
   GraduationCap, 
@@ -122,7 +123,7 @@ export default function TickerStrip({ initialTicker, initialLifestyle }: TickerS
       try {
         const timestamp = Date.now();
         let res = await fetch(`/api/ticker?_t=${timestamp}`, { cache: 'no-store' });
-        if (!res.ok) res = await fetch(`https://nuttryx.onrender.com/api/ticker?_t=${timestamp}`, { cache: 'no-store' });
+        if (!res.ok) res = await fetch(`${getBackendBaseUrl()}/api/ticker?_t=${timestamp}`, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
           if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -138,7 +139,7 @@ export default function TickerStrip({ initialTicker, initialLifestyle }: TickerS
       try {
         const timestamp = Date.now();
         let res = await fetch(`/api/lifestyle?_t=${timestamp}`, { cache: 'no-store' });
-        if (!res.ok) res = await fetch(`https://nuttryx.onrender.com/api/lifestyle?_t=${timestamp}`, { cache: 'no-store' });
+        if (!res.ok) res = await fetch(`${getBackendBaseUrl()}/api/lifestyle?_t=${timestamp}`, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
           if (json.success && json.data) {

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
+import { getBackendBaseUrl } from '@/lib/api';
 import { 
   ArrowRight, 
   Dumbbell, 
@@ -146,7 +147,7 @@ export default function Hero({ initialSlides }: HeroProps) {
       try {
         const timestamp = Date.now();
         let res = await fetch(`/api/slides?_t=${timestamp}`, { cache: 'no-store' });
-        if (!res.ok) res = await fetch(`https://nuttryx.onrender.com/api/slides?_t=${timestamp}`, { cache: 'no-store' });
+        if (!res.ok) res = await fetch(`${getBackendBaseUrl()}/api/slides?_t=${timestamp}`, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
           if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -180,7 +181,7 @@ export default function Hero({ initialSlides }: HeroProps) {
     };
 
     fetchLiveSlides();
-    const interval = setInterval(fetchLiveSlides, 5000); // 5s real-time live sync
+    const interval = setInterval(fetchLiveSlides, 30000); // 30s background sync
     const onFocus = () => fetchLiveSlides();
     const onStorage = (e: StorageEvent) => {
       if (e.key === 'nuttryx_slides_updated') {

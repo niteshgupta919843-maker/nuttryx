@@ -1,5 +1,9 @@
 import { Product, Order, SampleRequest } from '@/types';
 
+export const getBackendBaseUrl = (): string => {
+  return (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || 'https://nuttryx.onrender.com').replace(/\/$/, '');
+};
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 export const api = {

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { SlideModel, ISlide } from '../models/slide.model';
 
 export const INITIAL_SLIDES: ISlide[] = [
@@ -97,8 +98,9 @@ export class SlideService {
   }
 
   async updateSlide(id: string, data: Partial<ISlide>): Promise<ISlide | null> {
+    const query = mongoose.isValidObjectId(id) ? { $or: [{ id }, { _id: id }] } : { id };
     const updated = await SlideModel.findOneAndUpdate(
-      { id },
+      query,
       { $set: data },
       { new: true }
     ).lean();
@@ -106,7 +108,8 @@ export class SlideService {
   }
 
   async deleteSlide(id: string): Promise<boolean> {
-    const res = await SlideModel.deleteOne({ id });
+    const query = mongoose.isValidObjectId(id) ? { $or: [{ id }, { _id: id }] } : { id };
+    const res = await SlideModel.deleteOne(query);
     return res.deletedCount > 0;
   }
 }

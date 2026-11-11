@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
+import { getBackendBaseUrl } from '@/lib/api';
 import { 
   ShieldCheck, 
   Sparkles, 
@@ -96,7 +97,7 @@ export default function Footer({
         const timestamp = Date.now();
         let res = await fetch(`/api/settings?_t=${timestamp}`, { cache: 'no-store' });
         if (!res.ok) {
-          res = await fetch(`https://nuttryx.onrender.com/api/settings?_t=${timestamp}`, { cache: 'no-store' });
+          res = await fetch(`${getBackendBaseUrl()}/api/settings?_t=${timestamp}`, { cache: 'no-store' });
         }
         if (res.ok) {
           const json = await res.json();
@@ -188,7 +189,7 @@ export default function Footer({
         body: JSON.stringify({ email })
       });
       if (!res.ok) {
-        res = await fetch('https://nuttryx.onrender.com/api/subscribe', {
+        res = await fetch(`${getBackendBaseUrl()}/api/subscribe`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })

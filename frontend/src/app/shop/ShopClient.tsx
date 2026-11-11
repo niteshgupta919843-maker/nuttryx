@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { PRODUCTS, Product } from '@/data/products';
+import { getBackendBaseUrl } from '@/lib/api';
 import { 
   Star, 
   ShoppingBag, 
@@ -56,7 +57,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
       const timestamp = Date.now();
       let res = await fetch(`/api/products?_t=${timestamp}`, { cache: 'no-store' });
       if (!res.ok) {
-        res = await fetch(`https://nuttryx.onrender.com/api/products?_t=${timestamp}`, { cache: 'no-store' });
+        res = await fetch(`${getBackendBaseUrl()}/api/products?_t=${timestamp}`, { cache: 'no-store' });
       }
 
       if (res.ok) {
@@ -497,7 +498,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
                     style={{
                       position: 'relative',
                       width: '100%',
-                      height: 'clamp(190px, 45vw, 230px)',
+                      aspectRatio: '460 / 380',
                       borderRadius: '18px',
                       overflow: 'hidden',
                       background: 'linear-gradient(180deg, #FDFBF8 0%, #F5ECE0 100%)',

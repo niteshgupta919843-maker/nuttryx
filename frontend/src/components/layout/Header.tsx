@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { getBackendBaseUrl } from '@/lib/api';
 import { 
   ShoppingCart, 
   Search, 
@@ -28,6 +29,7 @@ export default function Header() {
   const router = useRouter();
   const { cartCount, setIsCartOpen, openSampleModal, triggerToast } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
+  const pathname = usePathname();
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -55,8 +57,28 @@ export default function Header() {
     { label: 'FAQ', href: '/#faq', id: 'faq' },
   ];
 
-  // Active section scroll spy
+  // Sync active nav item with route changes
   useEffect(() => {
+    if (pathname === '/shop' || pathname?.startsWith('/shop')) {
+      setActiveSection('shop');
+    } else if (pathname === '/' || pathname === '') {
+      if (typeof window !== 'undefined' && window.location.hash) {
+        const hashId = window.location.hash.replace('#', '');
+        if (navLinks.some(l => l.id === hashId)) {
+          setActiveSection(hashId);
+          return;
+        }
+      }
+      setActiveSection('home');
+    } else {
+      setActiveSection('');
+    }
+  }, [pathname]);
+
+  // Active section scroll spy (strictly active only on homepage)
+  useEffect(() => {
+    if (pathname !== '/' && pathname !== '') return;
+
     const handleScroll = () => {
       const scrollPos = window.scrollY + 200;
       for (let i = navLinks.length - 1; i >= 0; i--) {
@@ -69,7 +91,7 @@ export default function Header() {
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [pathname]);
 
   // Close account dropdown on outside click or Escape key
   useEffect(() => {
@@ -103,7 +125,7 @@ export default function Header() {
     try {
       let res = await fetch(`/api/orders/track/${encodeURIComponent(clean)}`, { cache: 'no-store' });
       if (!res.ok) {
-        res = await fetch(`https://nuttryx.onrender.com/api/orders/track/${encodeURIComponent(clean)}`, { cache: 'no-store' });
+        res = await fetch(`${getBackendBaseUrl()}/api/orders/track/${encodeURIComponent(clean)}`, { cache: 'no-store' });
       }
       const json = await res.json();
       if (json.success && json.data) {
@@ -190,7 +212,7 @@ export default function Header() {
         <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px' }}>
           
           {/* Brand Logo */}
-          <a href="#home" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
             <div 
               style={{
                 width: '46px',
@@ -237,7 +259,14 @@ export default function Header() {
           {/* Center Navigation Links */}
           <div className="hide-tablet" style={{ display: 'flex', alignItems: 'center', gap: '26px' }}>
             {navLinks.map((link) => {
-              const isActive = activeSection === link.id;
+              const isCurrentRoute = (link.href === '/shop' && (pathname === '/shop' || pathname?.startsWith('/shop'))) ||
+                                     (link.href === '/' && (pathname === '/' || pathname === ''));
+              const isActive = (pathname === '/shop' || pathname?.startsWith('/shop'))
+                ? link.id === 'shop'
+                : (pathname === '/' || pathname === '')
+                  ? activeSection === link.id
+                  : isCurrentRoute;
+
               return (
                 <a
                   key={link.label}
@@ -760,26 +789,36 @@ export default function Header() {
               gap: '12px'
             }}
           >
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={() => {
-                  setActiveSection(link.id);
-                  setMobileMenuOpen(false);
-                }}
-                style={{
-                  fontFamily: 'var(--font-heading)',
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  color: '#20100A',
-                  padding: '6px 0',
-                  textDecoration: 'none'
-                }}
-              >
-                {link.label}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const isCurrentRoute = (link.href === '/shop' && (pathname === '/shop' || pathname?.startsWith('/shop'))) ||
+                                     (link.href === '/' && (pathname === '/' || pathname === ''));
+              const isActive = (pathname === '/shop' || pathname?.startsWith('/shop'))
+                ? link.id === 'shop'
+                : (pathname === '/' || pathname === '')
+                  ? activeSection === link.id
+                  : isCurrentRoute;
+
+              return (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => {
+                    setActiveSection(link.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  style={{
+                    fontFamily: 'var(--font-heading)',
+                    fontSize: '1rem',
+                    fontWeight: isActive ? 800 : 600,
+                    color: isActive ? '#D9822B' : '#20100A',
+                    padding: '6px 0',
+                    textDecoration: 'none'
+                  }}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
             
             <div style={{ borderTop: '1px solid #EFE6DC', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {isAuthenticated ? (

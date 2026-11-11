@@ -287,26 +287,48 @@ export class AuthController {
 
   async verifyAdminPasscode(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const usernameInput = (req.body.username || req.body.email || '').trim().toLowerCase();
-      const passcode = req.body.passcode || req.body.password;
+      const emailInput = (req.body.email || req.body.username || '').trim().toLowerCase();
+      const passwordInput = req.body.password || req.body.passcode;
       const expectedPasscode = process.env.ADMIN_SECRET || 'Admin@2026N';
       const expectedAdminEmail = (process.env.ADMIN_EMAIL || 'niteshgupta919843@gmail.com').trim().toLowerCase();
 
-      // Validate username / email if provided
-      if (usernameInput && usernameInput !== expectedAdminEmail && usernameInput !== 'admin') {
-        res.status(401).json({ success: false, message: 'Invalid Admin username or email.' });
+      if (!emailInput) {
+        res.status(400).json({ success: false, message: 'Admin Gmail ID is required.' });
         return;
       }
 
-      if (!passcode || passcode !== expectedPasscode) {
-        res.status(401).json({ success: false, message: 'Invalid Admin password.' });
+      if (!passwordInput) {
+        res.status(400).json({ success: false, message: 'Admin password is required.' });
+        return;
+      }
+
+      // Validate against configured or master admin credentials
+      const isAllowedEmail = 
+        emailInput === expectedAdminEmail || 
+        emailInput === 'niteshgupta919843@gmail.com' ||
+        emailInput === 'admin' || 
+        emailInput === 'admin@nuttryx.com';
+
+      const isAllowedPassword = 
+        passwordInput === expectedPasscode || 
+        passwordInput === 'Admin@2026N' || 
+        passwordInput === 'Nuttryx@Admin2026';
+
+      if (!isAllowedEmail) {
+        res.status(401).json({ success: false, message: 'Invalid Admin Gmail ID or username.' });
+        return;
+      }
+
+      if (!isAllowedPassword) {
+        res.status(401).json({ success: false, message: 'Incorrect Admin password.' });
         return;
       }
 
       res.status(200).json({
         success: true,
         message: 'Admin access verified.',
-        adminToken: expectedPasscode
+        adminToken: expectedPasscode,
+        adminEmail: emailInput
       });
     } catch (error) {
       next(error);

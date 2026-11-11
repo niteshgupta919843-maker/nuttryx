@@ -27,6 +27,8 @@ export interface Product {
   nutrition: ProductNutrition;
   ingredients: string;
   features: string[];
+  price?: number;
+  originalPrice?: number;
 }
 
 export interface CartItem {

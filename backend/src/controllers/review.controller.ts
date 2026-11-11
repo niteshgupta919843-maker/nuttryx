@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import mongoose from 'mongoose';
 import { ReviewModel, IReview } from '../models/review.model';
 import { INITIAL_50_REVIEWS } from '../data/initialReviews';
 
@@ -37,7 +38,7 @@ export class ReviewController {
   // POST /api/reviews - Create a review (from website or admin)
   async createReview(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { name, role, rating, comment, flavour } = req.body;
+      const { name, role, rating, comment, flavour, isVerified, isActive } = req.body;
 
       if (!name || !comment) {
         res.status(400).json({
@@ -48,7 +49,7 @@ export class ReviewController {
       }
 
       const totalCount = await ReviewModel.countDocuments();
-      const id = `rev-${Date.now()}`;
+      const id = req.body.id || `rev-${Date.now()}`;
 
       const newReview = await ReviewModel.create({
         id,
@@ -58,8 +59,8 @@ export class ReviewController {
         date: 'Verified Buyer • Just now',
         comment: String(comment).trim(),
         flavour: flavour ? String(flavour).trim() : 'Dark Chocolate Peanut Butter',
-        isVerified: true,
-        isActive: true,
+        isVerified: isVerified !== undefined ? Boolean(isVerified) : true,
+        isActive: isActive !== undefined ? Boolean(isActive) : true,
         order: totalCount + 1
       });
 
@@ -79,7 +80,8 @@ export class ReviewController {
       const { id } = req.params;
       const { name, role, rating, comment, flavour, isActive, isVerified, order } = req.body;
 
-      const review = await ReviewModel.findOne({ id });
+      const query = mongoose.isValidObjectId(id) ? { $or: [{ id }, { _id: id }] } : { id };
+      const review = await ReviewModel.findOne(query);
       if (!review) {
         res.status(404).json({ success: false, message: `Review '${id}' not found` });
         return;
@@ -110,7 +112,8 @@ export class ReviewController {
   async deleteReview(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
-      const result = await ReviewModel.deleteOne({ id });
+      const query = mongoose.isValidObjectId(id) ? { $or: [{ id }, { _id: id }] } : { id };
+      const result = await ReviewModel.deleteOne(query);
 
       if (result.deletedCount === 0) {
         res.status(404).json({ success: false, message: `Review '${id}' not found` });

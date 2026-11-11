@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
+import { getBackendBaseUrl } from '@/lib/api';
 import { 
   Lock, 
   Mail, 
@@ -172,7 +173,7 @@ function LoginContent() {
         })
       });
       if (!res.ok) {
-        res = await fetch('https://nuttryx.onrender.com/api/auth/forgot-password', {
+        res = await fetch(`${getBackendBaseUrl()}/api/auth/forgot-password`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

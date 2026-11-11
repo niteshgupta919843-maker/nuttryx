@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { getBackendBaseUrl } from '@/lib/api';
 import { FAQS } from '@/data/products';
 import { ChevronDown, HelpCircle, Sparkles, MessageCircle } from 'lucide-react';
 
@@ -37,7 +38,7 @@ export default function FaqSection({ initialFaqs }: FaqSectionProps) {
     try {
       let res = await fetch(`/api/faqs?_t=${Date.now()}`, { cache: 'no-store' });
       if (!res.ok) {
-        res = await fetch(`https://nuttryx.onrender.com/api/faqs?_t=${Date.now()}`, { cache: 'no-store' });
+        res = await fetch(`${getBackendBaseUrl()}/api/faqs?_t=${Date.now()}`, { cache: 'no-store' });
       }
       if (res.ok) {
         const json = await res.json();

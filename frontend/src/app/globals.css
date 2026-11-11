@@ -404,3 +404,37 @@ img {
     display: none;
   }
 }
+
+/* Print Styles for Invoices and Packing Slips */
+@media print {
+  html, body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-size: 12pt !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .printable-invoice, .printable-invoice * {
+    visibility: visible;
+  }
+
+  .printable-invoice {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #FFFFFF !important;
+  }
+
+  .no-print, button {
+    display: none !important;
+  }
+}

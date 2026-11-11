@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { getBackendBaseUrl } from '@/lib/api';
 import { Check, X, Sparkles, Award } from 'lucide-react';
 
 export interface ComparisonRow {
@@ -100,7 +101,7 @@ export default function ComparisonSection({ initialBenefit }: ComparisonSectionP
     try {
       let res = await fetch(`/api/benefit?_t=${Date.now()}`, { cache: 'no-store' });
       if (!res.ok) {
-        res = await fetch(`https://nuttryx.onrender.com/api/benefit?_t=${Date.now()}`, { cache: 'no-store' });
+        res = await fetch(`${getBackendBaseUrl()}/api/benefit?_t=${Date.now()}`, { cache: 'no-store' });
       }
       if (res.ok) {
         const json = await res.json();
