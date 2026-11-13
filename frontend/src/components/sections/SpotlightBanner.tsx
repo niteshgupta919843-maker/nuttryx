@@ -5,64 +5,101 @@ import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { PRODUCTS } from '@/data/products';
 import { Product, ProductSize } from '@/types';
+import { getBackendBaseUrl } from '@/lib/api';
 import { 
   ShoppingBag, 
   Sparkles, 
   Check, 
   Dumbbell, 
   Leaf, 
-  ShieldCheck,
-  Star,
-  Minus,
-  Plus
+  ShieldCheck, 
+  Star, 
+  Minus, 
+  Plus 
 } from 'lucide-react';
 
 interface SpotlightBannerProps {
   initialProduct?: Product;
+  spotlightProductId?: string;
 }
 
-export default function SpotlightBanner({ initialProduct }: SpotlightBannerProps) {
+export default function SpotlightBanner({ initialProduct, spotlightProductId }: SpotlightBannerProps) {
   const { addToCart, openSampleModal } = useCart();
-  const [darkChocolateProduct, setDarkChocolateProduct] = useState<Product>(
-    () => initialProduct || PRODUCTS.find(p => p.id === 'dark-chocolate') || PRODUCTS[0]
-  );
 
+  const [product, setProduct] = useState<Product>(() => {
+    if (initialProduct) return initialProduct;
+    const targetId = spotlightProductId || 'dark-chocolate';
+    return PRODUCTS.find(p => p.id === targetId) || PRODUCTS[0];
+  });
+
+  // Keep state updated if server passes new initialProduct
   useEffect(() => {
     if (initialProduct) {
-      setDarkChocolateProduct(initialProduct);
+      setProduct(initialProduct);
     }
   }, [initialProduct]);
 
+  // Live real-time sync with database settings and catalog updates
   useEffect(() => {
-    const syncProduct = () => {
+    const syncSpotlight = async () => {
       try {
-        const cached = localStorage.getItem('nuttryx_cached_products');
-        if (cached) {
-          const list = JSON.parse(cached);
-          const found = list.find((p: Product) => p.id === 'dark-chocolate');
-          if (found) setDarkChocolateProduct(found);
+        let activeSpotlightId = spotlightProductId || 'dark-chocolate';
+        const cachedSettings = localStorage.getItem('nuttryx_store_settings');
+        if (cachedSettings) {
+          const parsed = JSON.parse(cachedSettings);
+          if (parsed.spotlightProductId) activeSpotlightId = parsed.spotlightProductId;
+        }
+
+        // Try getting latest products
+        const cachedProducts = localStorage.getItem('nuttryx_cached_products');
+        if (cachedProducts) {
+          const list: Product[] = JSON.parse(cachedProducts);
+          const found = list.find(p => p.id === activeSpotlightId);
+          if (found) {
+            setProduct(found);
+            return;
+          }
+        }
+
+        // Fallback fetch from API
+        const res = await fetch(`${getBackendBaseUrl()}/api/products?_t=${Date.now()}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data)) {
+            const found = json.data.find((p: Product) => p.id === activeSpotlightId);
+            if (found) setProduct(found);
+          }
         }
       } catch {}
     };
-    syncProduct();
-    window.addEventListener('nuttryx_catalog_updated', syncProduct);
-    window.addEventListener('storage', syncProduct);
-    return () => {
-      window.removeEventListener('nuttryx_catalog_updated', syncProduct);
-      window.removeEventListener('storage', syncProduct);
-    };
-  }, []);
 
-  const sizes: ProductSize[] = darkChocolateProduct.sizes && darkChocolateProduct.sizes.length > 0
-    ? darkChocolateProduct.sizes
+    window.addEventListener('nuttryx_catalog_updated', syncSpotlight);
+    window.addEventListener('nuttryx_settings_updated', syncSpotlight);
+    window.addEventListener('storage', syncSpotlight);
+    return () => {
+      window.removeEventListener('nuttryx_catalog_updated', syncSpotlight);
+      window.removeEventListener('nuttryx_settings_updated', syncSpotlight);
+      window.removeEventListener('storage', syncSpotlight);
+    };
+  }, [spotlightProductId]);
+
+  const sizes: ProductSize[] = product.sizes && product.sizes.length > 0
+    ? product.sizes
     : [
-        { weight: '500g', price: 279, originalPrice: 429, inStock: true },
+        { weight: '450g', price: 210, originalPrice: 429, inStock: true },
         { weight: '1kg', price: 599, originalPrice: 799, inStock: true }
       ];
 
   const [selectedWeight, setSelectedWeight] = useState<string>(sizes[0].weight);
   const [quantity, setQuantity] = useState<number>(1);
   const [isAdded, setIsAdded] = useState<boolean>(false);
+
+  // Re-verify selected size when product changes
+  useEffect(() => {
+    if (sizes.length > 0 && !sizes.some(s => s.weight === selectedWeight)) {
+      setSelectedWeight(sizes[0].weight);
+    }
+  }, [product, sizes, selectedWeight]);
 
   const activeSize = sizes.find(s => s.weight === selectedWeight) || sizes[0];
   const discountPercent = activeSize.originalPrice
@@ -74,10 +111,14 @@ export default function SpotlightBanner({ initialProduct }: SpotlightBannerProps
   };
 
   const handleAddToCart = () => {
-    addToCart(darkChocolateProduct, activeSize.weight, quantity);
+    addToCart(product, activeSize.weight, quantity);
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 1600);
   };
+
+  const proteinBadge = product.nutrition?.proteinPer100g 
+    ? `High Protein ${product.nutrition.proteinPer100g}` 
+    : 'High Protein 30g';
 
   return (
     <section style={{ padding: 'clamp(40px, 6vw, 70px) 0', background: '#F8F6F2' }}>
@@ -149,8 +190,8 @@ export default function SpotlightBanner({ initialProduct }: SpotlightBannerProps
               }}
             >
               <Image 
-                src="/images/dark-chocolate-peanut-butter.jpg" 
-                alt="NUTTRYX Dark Chocolate Peanut Butter" 
+                src={product.image || '/images/dark-chocolate-peanut-butter.jpg'} 
+                alt={product.name} 
                 fill
                 style={{ 
                   objectFit: 'cover',
@@ -161,7 +202,7 @@ export default function SpotlightBanner({ initialProduct }: SpotlightBannerProps
                 priority
               />
 
-              {/* Floating Bestseller Tag */}
+              {/* Floating Bestseller / Signature Tag */}
               <div 
                 style={{
                   position: 'absolute',
@@ -183,7 +224,7 @@ export default function SpotlightBanner({ initialProduct }: SpotlightBannerProps
                 }}
               >
                 <span>🔥</span>
-                <span>Bestseller Flavour</span>
+                <span>{product.badge || 'Signature Choice'}</span>
               </div>
 
               {/* Floating Bottom Pill */}
@@ -205,7 +246,7 @@ export default function SpotlightBanner({ initialProduct }: SpotlightBannerProps
                   zIndex: 2
                 }}
               >
-                🍫 Rich Dutch Dark Cocoa • Roasted Gujarat Peanuts
+                🥜 100% Saurashtra Peanuts • Slow Stone Milled
               </div>
             </div>
 
@@ -252,8 +293,8 @@ export default function SpotlightBanner({ initialProduct }: SpotlightBannerProps
                 {/* Rating */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: '#FFD199', fontWeight: 700 }}>
                   <Star size={14} fill="#D9822B" color="#D9822B" />
-                  <span>4.9</span>
-                  <span style={{ opacity: 0.7, fontSize: '0.74rem' }}>(1,420+ reviews)</span>
+                  <span>{product.rating || '4.9'}</span>
+                  <span style={{ opacity: 0.7, fontSize: '0.74rem' }}>({product.reviewsCount ? `${product.reviewsCount}+` : '1,420+'} reviews)</span>
                 </div>
               </div>
 
@@ -268,13 +309,12 @@ export default function SpotlightBanner({ initialProduct }: SpotlightBannerProps
                   letterSpacing: '-0.02em'
                 }}
               >
-                Dark Chocolate Peanut Butter
+                {product.name}
               </h2>
 
-              {/* Paragraph */}
+              {/* Subtitle / Paragraph */}
               <p style={{ color: '#D5C4B8', fontSize: 'clamp(0.9rem, 1.2vw, 1rem)', lineHeight: 1.6, marginBottom: '20px' }}>
-                Experience the magic where 100% slow-roasted Gujarat peanuts unite with premium Dutch dark cacao. 
-                Zero refined sugars, zero vegetable oil, and 100% natural chocolate richness.
+                {product.description || product.subtitle || 'Experience the magic of 100% slow-roasted Saurashtra bold peanuts. Zero hydrogenated palm oil, zero added refined sugars, and 100% pure natural protein.'}
               </p>
 
               {/* 3 Nutrition Micro Badges */}
@@ -302,7 +342,7 @@ export default function SpotlightBanner({ initialProduct }: SpotlightBannerProps
                   }}
                 >
                   <Dumbbell size={15} color="#D9822B" />
-                  <span>High Protein 28g</span>
+                  <span>{proteinBadge}</span>
                 </div>
 
                 <div 
@@ -320,7 +360,7 @@ export default function SpotlightBanner({ initialProduct }: SpotlightBannerProps
                   }}
                 >
                   <Leaf size={15} color="#38A169" />
-                  <span>No Added Sugar</span>
+                  <span>{product.nutrition?.sugarAdded === '0g' || !product.nutrition?.sugarAdded ? 'Zero Added Sugar' : `Low Sugar (${product.nutrition.sugarAdded})`}</span>
                 </div>
 
                 <div 
@@ -362,7 +402,7 @@ export default function SpotlightBanner({ initialProduct }: SpotlightBannerProps
                   <span style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#FFD199', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.04em' }}>
                     Select Pack Size
                   </span>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {sizes.map((s) => {
                       const isActive = s.weight === selectedWeight;
                       return (
@@ -387,6 +427,11 @@ export default function SpotlightBanner({ initialProduct }: SpotlightBannerProps
                         >
                           <span>{s.weight}</span>
                           <span style={{ opacity: 0.9, fontSize: '0.76rem' }}>• ₹{s.price}</span>
+                          {s.originalPrice && s.originalPrice > s.price && (
+                            <span style={{ opacity: 0.6, fontSize: '0.7rem', textDecoration: 'line-through' }}>
+                              ₹{s.originalPrice}
+                            </span>
+                          )}
                         </button>
                       );
                     })}
@@ -578,7 +623,6 @@ export default function SpotlightBanner({ initialProduct }: SpotlightBannerProps
           .spotlight-primary-btn,
           .spotlight-sample-btn {
             width: 100% !important;
-            justify-content: center !important;
           }
         }
       `}</style>

@@ -12,7 +12,8 @@ export const DEFAULT_SETTINGS = {
   facebookUrl: 'https://facebook.com',
   twitterUrl: 'https://twitter.com',
   youtubeUrl: 'https://youtube.com',
-  whatsappNumber: '+91 98765 43210'
+  whatsappNumber: '+91 98765 43210',
+  spotlightProductId: 'dark-chocolate'
 };
 
 export class SettingsService {
@@ -32,7 +33,8 @@ export class SettingsService {
           facebookUrl: doc.facebookUrl || DEFAULT_SETTINGS.facebookUrl,
           twitterUrl: doc.twitterUrl || DEFAULT_SETTINGS.twitterUrl,
           youtubeUrl: doc.youtubeUrl || DEFAULT_SETTINGS.youtubeUrl,
-          whatsappNumber: doc.whatsappNumber || DEFAULT_SETTINGS.whatsappNumber
+          whatsappNumber: doc.whatsappNumber || DEFAULT_SETTINGS.whatsappNumber,
+          spotlightProductId: doc.spotlightProductId || DEFAULT_SETTINGS.spotlightProductId
         };
       }
     } catch (err) {
@@ -59,7 +61,8 @@ export class SettingsService {
       facebookUrl: updated.facebookUrl || DEFAULT_SETTINGS.facebookUrl,
       twitterUrl: updated.twitterUrl || DEFAULT_SETTINGS.twitterUrl,
       youtubeUrl: updated.youtubeUrl || DEFAULT_SETTINGS.youtubeUrl,
-      whatsappNumber: updated.whatsappNumber || DEFAULT_SETTINGS.whatsappNumber
+      whatsappNumber: updated.whatsappNumber || DEFAULT_SETTINGS.whatsappNumber,
+      spotlightProductId: updated.spotlightProductId || DEFAULT_SETTINGS.spotlightProductId
     };
   }
 }

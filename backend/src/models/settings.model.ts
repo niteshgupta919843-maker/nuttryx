@@ -14,6 +14,7 @@ export interface ISettingsDocument extends Document {
   twitterUrl: string;
   youtubeUrl: string;
   whatsappNumber: string;
+  spotlightProductId: string;
 }
 
 const SettingsSchema = new Schema<ISettingsDocument>(
@@ -30,7 +31,8 @@ const SettingsSchema = new Schema<ISettingsDocument>(
     facebookUrl: { type: String, default: 'https://facebook.com' },
     twitterUrl: { type: String, default: 'https://twitter.com' },
     youtubeUrl: { type: String, default: 'https://youtube.com' },
-    whatsappNumber: { type: String, default: '+91 98765 43210' }
+    whatsappNumber: { type: String, default: '+91 98765 43210' },
+    spotlightProductId: { type: String, default: 'dark-chocolate' }
   },
   { timestamps: true }
 );

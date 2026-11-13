@@ -8,6 +8,7 @@ import TickerStrip from '@/components/ui/TickerStrip';
 import ProcessStory from '@/components/sections/ProcessStory';
 import ReviewsSection from '@/components/sections/ReviewsSection';
 import FaqSection from '@/components/sections/FaqSection';
+import { Product } from '@/types';
 import {
   fetchServerProducts,
   fetchServerSlides,
@@ -16,7 +17,8 @@ import {
   fetchServerCraft,
   fetchServerBenefit,
   fetchServerTicker,
-  fetchServerLifestyle
+  fetchServerLifestyle,
+  fetchServerSettings
 } from '@/lib/server-api';
 
 export const dynamic = 'force-dynamic';
@@ -28,7 +30,7 @@ const ProteinCalculator = nextDynamic(() => import('@/components/sections/Protei
 });
 
 export default async function Home() {
-  const [products, slides, faqs, reviews, craft, benefit, ticker, lifestyle] = await Promise.all([
+  const [products, slides, faqs, reviews, craft, benefit, ticker, lifestyle, settings] = await Promise.all([
     fetchServerProducts(),
     fetchServerSlides(),
     fetchServerFaqs(),
@@ -36,16 +38,18 @@ export default async function Home() {
     fetchServerCraft(),
     fetchServerBenefit(),
     fetchServerTicker(),
-    fetchServerLifestyle()
+    fetchServerLifestyle(),
+    fetchServerSettings()
   ]);
 
-  const darkChocolate = products.find(p => p.id === 'dark-chocolate');
+  const spotlightId = settings?.spotlightProductId || 'dark-chocolate';
+  const spotlightProduct = products.find((p: Product) => p.id === spotlightId) || products.find((p: Product) => p.id === 'dark-chocolate') || products[0];
 
   return (
     <>
       <Hero initialSlides={slides} />
       <ProductSection initialProducts={products} />
-      <SpotlightBanner initialProduct={darkChocolate} />
+      <SpotlightBanner initialProduct={spotlightProduct} spotlightProductId={spotlightId} />
       <ComparisonSection initialBenefit={benefit} />
       <TickerStrip initialTicker={ticker} initialLifestyle={lifestyle} />
       <ProteinCalculator />

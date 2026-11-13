@@ -57,6 +57,7 @@ import {
   MessageSquareHeart
 } from 'lucide-react';
 import { PRODUCTS, Product } from '@/data/products';
+import { compressImage } from '@/lib/image-compress';
 
 interface MockOrder {
   id: string;
@@ -354,7 +355,8 @@ export default function AdminDashboard() {
     facebookUrl: 'https://facebook.com',
     twitterUrl: 'https://twitter.com',
     youtubeUrl: 'https://youtube.com',
-    whatsappNumber: '+91 98765 43210'
+    whatsappNumber: '+91 98765 43210',
+    spotlightProductId: 'dark-chocolate'
   });
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -1062,23 +1064,25 @@ export default function AdminDashboard() {
     setEditUploadFileName('');
   };
 
-  const handleEditProductImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEditProductImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        showToast('Image size exceeds 5MB limit. Please choose a smaller image.');
-        return;
-      }
       setEditUploadFileName(file.name);
-      const reader = new FileReader();
-      reader.onload = (uploadEvent) => {
-        const result = uploadEvent.target?.result as string;
-        if (result) {
-          setEditProductImage(result);
-          showToast(`✓ Image "${file.name}" loaded!`);
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file, 920, 920, 0.82);
+        setEditProductImage(compressed);
+        showToast(`✓ Image "${file.name}" compressed & ready!`);
+      } catch {
+        const reader = new FileReader();
+        reader.onload = (uploadEvent) => {
+          const result = uploadEvent.target?.result as string;
+          if (result) {
+            setEditProductImage(result);
+            showToast(`✓ Image "${file.name}" loaded!`);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -1187,43 +1191,47 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleProductImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProductImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        showToast('Image size exceeds 5MB limit. Please choose a smaller image.');
-        return;
-      }
       setUploadFileName(file.name);
-      const reader = new FileReader();
-      reader.onload = (uploadEvent) => {
-        const result = uploadEvent.target?.result as string;
-        if (result) {
-          setNewProductImage(result);
-          showToast(`✓ Image "${file.name}" loaded!`);
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file, 920, 920, 0.82);
+        setNewProductImage(compressed);
+        showToast(`✓ Image "${file.name}" compressed & ready!`);
+      } catch {
+        const reader = new FileReader();
+        reader.onload = (uploadEvent) => {
+          const result = uploadEvent.target?.result as string;
+          if (result) {
+            setNewProductImage(result);
+            showToast(`✓ Image "${file.name}" loaded!`);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
-  const handleSlideImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSlideImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        showToast('Banner image size exceeds 5MB limit. Please choose a smaller file.');
-        return;
-      }
       setSlideImageFileName(file.name);
-      const reader = new FileReader();
-      reader.onload = (uploadEvent) => {
-        const result = uploadEvent.target?.result as string;
-        if (result) {
-          setSlideImage(result);
-          showToast(`✓ Banner image "${file.name}" loaded!`);
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file, 1600, 900, 0.82);
+        setSlideImage(compressed);
+        showToast(`✓ Banner image "${file.name}" compressed & ready!`);
+      } catch {
+        const reader = new FileReader();
+        reader.onload = (uploadEvent) => {
+          const result = uploadEvent.target?.result as string;
+          if (result) {
+            setSlideImage(result);
+            showToast(`✓ Banner image "${file.name}" loaded!`);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -3437,7 +3445,33 @@ export default function AdminDashboard() {
                           )}
                         </div>
 
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                          <button
+                            onClick={async () => {
+                              const updated = { ...storeSettings, spotlightProductId: product.id };
+                              setStoreSettings(updated);
+                              await handleSaveSettings(updated);
+                              showToast(`⭐ "${product.name}" set as Homepage Spotlight Jar!`);
+                            }}
+                            style={{ 
+                              color: storeSettings.spotlightProductId === product.id ? '#D9822B' : '#736257', 
+                              background: storeSettings.spotlightProductId === product.id ? '#FFF3E0' : '#FAF7F2', 
+                              border: storeSettings.spotlightProductId === product.id ? '1.5px solid #D9822B' : '1px solid #E0D5C7', 
+                              padding: '7px 12px', 
+                              borderRadius: '9999px', 
+                              cursor: 'pointer', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: '5px', 
+                              fontSize: '0.78rem', 
+                              fontWeight: 700,
+                              transition: 'all 0.15s ease'
+                            }}
+                            title="Feature this jar in Homepage Spotlight Banner"
+                          >
+                            <Star size={13} fill={storeSettings.spotlightProductId === product.id ? '#D9822B' : 'none'} color="#D9822B" />
+                            {storeSettings.spotlightProductId === product.id ? 'Spotlight Active' : 'Set Spotlight'}
+                          </button>
                           <button
                             onClick={() => handleStartEditProduct(product)}
                             style={{ 
@@ -6427,7 +6461,8 @@ export default function AdminDashboard() {
                         facebookUrl: 'https://facebook.com',
                         twitterUrl: 'https://twitter.com',
                         youtubeUrl: 'https://youtube.com',
-                        whatsappNumber: '+91 98765 43210'
+                        whatsappNumber: '+91 98765 43210',
+                        spotlightProductId: 'dark-chocolate'
                       };
                       setStoreSettings(defaults);
                       handleSaveSettings(defaults);
@@ -6522,6 +6557,44 @@ export default function AdminDashboard() {
               {/* Form Grid */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '22px', marginBottom: '24px' }}>
                 
+                {/* Section: Homepage Spotlight Featured Product */}
+                <div style={{ background: '#FFFFFF', borderRadius: '16px', border: '1.5px solid #EAD8C7', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', gridColumn: '1 / -1' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Star size={20} color="#D9822B" fill="#D9822B" />
+                      <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#20100A', margin: 0 }}>
+                        Homepage Spotlight Jar Selection
+                      </h4>
+                    </div>
+                    <span style={{ fontSize: '0.76rem', background: '#FFF3E0', color: '#B55A00', border: '1px solid #FFE0B2', padding: '4px 10px', borderRadius: '99px', fontWeight: 800 }}>
+                      Live on Homepage Middle Banner
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '0.84rem', color: '#736257', marginBottom: '16px' }}>
+                    Homepage ke center mein jo bada premium card dikhta hai (Single Jar Showcase), wahan kaunsa product display ho:
+                  </p>
+                  <div style={{ display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <select
+                      value={storeSettings.spotlightProductId || 'dark-chocolate'}
+                      onChange={(e) => setStoreSettings({ ...storeSettings, spotlightProductId: e.target.value })}
+                      style={{ padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #D9822B', fontSize: '0.9rem', color: '#20100A', fontWeight: 800, background: '#FAF7F2', outline: 'none', minWidth: '280px' }}
+                    >
+                      {productsList.map((p: Product) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} ({p.category})
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => handleSaveSettings(storeSettings)}
+                      style={{ padding: '10px 18px', background: '#20100A', color: '#FAF7F2', borderRadius: '10px', fontWeight: 800, fontSize: '0.86rem', border: 'none', cursor: 'pointer' }}
+                    >
+                      Set & Save Spotlight
+                    </button>
+                  </div>
+                </div>
+
                 {/* Section 1: Factory Location & Address */}
                 <div style={{ background: '#FFFFFF', borderRadius: '16px', border: '1px solid #ECE4D8', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
