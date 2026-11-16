@@ -186,35 +186,16 @@ export default function SpotlightBanner({ initialProduct, spotlightProductId }: 
                 overflow: 'hidden',
                 background: 'radial-gradient(circle at center, #3E2115 0%, #20100A 100%)',
                 border: '1.5px solid rgba(255, 255, 255, 0.12)',
-                boxShadow: 'inset 0 0 40px rgba(0,0,0,0.5), 0 12px 30px rgba(0,0,0,0.35)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
+                boxShadow: 'inset 0 0 40px rgba(0,0,0,0.5), 0 12px 30px rgba(0,0,0,0.35)'
               }}
             >
-              {/* Ambient backdrop */}
-              <div 
-                style={{
-                  position: 'absolute',
-                  inset: '-10px',
-                  backgroundImage: `url(${product.image || '/images/dark-chocolate-peanut-butter.jpg'})`,
-                  backgroundPosition: 'center',
-                  backgroundSize: 'cover',
-                  filter: 'blur(18px) opacity(0.3)',
-                  transform: 'scale(1.15)',
-                  pointerEvents: 'none'
-                }}
-              />
               <Image 
                 src={product.image || '/images/dark-chocolate-peanut-butter.jpg'} 
                 alt={product.name} 
                 fill
                 style={{ 
-                  objectFit: 'contain',
+                  objectFit: 'cover',
                   objectPosition: 'center',
-                  padding: '16px',
-                  position: 'relative',
-                  zIndex: 1,
                   transition: 'transform 0.4s ease'
                 }}
                 sizes="(max-width: 768px) 100vw, 500px"

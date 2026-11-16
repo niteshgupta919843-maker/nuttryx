@@ -219,47 +219,25 @@ export default function ProductSection({ initialProducts }: ProductSectionProps)
                   e.currentTarget.style.borderColor = '#ECE2D5';
                 }}
               >
-                {/* ── Visual Image Showcase (100% Uncropped with Ambient Backdrop) ── */}
+                {/* ── Visual Image Showcase with Soft Rounded Corners ── */}
                 <div 
                   style={{
                     position: 'relative',
                     width: '100%',
-                    aspectRatio: '1 / 1',
+                    aspectRatio: '460 / 380',
                     borderRadius: '18px',
                     overflow: 'hidden',
-                    background: '#FAF6F0',
+                    background: 'linear-gradient(180deg, #FDFBF8 0%, #F5ECE0 100%)',
                     border: '1px solid rgba(80, 45, 25, 0.08)',
-                    marginBottom: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
+                    marginBottom: '16px'
                   }}
                 >
-                  {/* Ambient Soft Backdrop: seamlessly fills container matching image tones */}
-                  <div 
-                    style={{
-                      position: 'absolute',
-                      inset: '-10px',
-                      backgroundImage: `url(${product.image})`,
-                      backgroundPosition: 'center',
-                      backgroundSize: 'cover',
-                      filter: 'blur(16px) saturate(1.2) opacity(0.28)',
-                      transform: 'scale(1.15)',
-                      pointerEvents: 'none'
-                    }}
-                  />
-
-                  {/* Main Product Image: 100% visible, cap to base, never cropped */}
                   <Image 
                     src={product.image} 
                     alt={product.name} 
                     fill
                     style={{ 
-                      objectFit: 'contain',
-                      objectPosition: 'center',
-                      padding: '8px',
-                      position: 'relative',
-                      zIndex: 1,
+                      objectFit: 'cover',
                       transition: 'transform 0.4s ease'
                     }}
                     sizes="(max-width: 768px) 100vw, 360px"
