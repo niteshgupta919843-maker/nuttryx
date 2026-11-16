@@ -301,81 +301,90 @@ export default function ProductSection({ initialProducts }: ProductSectionProps)
                 <h4 
                   style={{
                     fontFamily: 'var(--font-heading)',
-                    fontSize: '1.12rem',
+                    fontSize: '1.08rem',
                     fontWeight: 800,
                     color: '#20100A',
-                    lineHeight: 1.3,
-                    marginBottom: '6px'
+                    lineHeight: 1.35,
+                    marginBottom: '6px',
+                    minHeight: '2.8rem',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden'
                   }}
+                  title={product.name}
                 >
                   {product.name}
                 </h4>
 
                 {/* Star Ratings + Review Pill */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
                   <div style={{ display: 'flex', color: '#D9822B' }}>
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={14} fill="#D9822B" />
+                      <Star key={i} size={13} fill="#D9822B" />
                     ))}
                   </div>
-                  <span 
-                    style={{ 
-                      fontSize: '0.74rem', 
-                      color: '#5C4A3E', 
-                      fontWeight: 700,
-                      background: '#F8F4EE',
-                      padding: '2px 8px',
-                      borderRadius: '9999px',
-                      border: '1px solid #ECE2D5'
-                    }}
-                  >
+                  <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#20100A' }}>
+                    {product.rating || '4.9'}
+                  </span>
+                  <span style={{ fontSize: '0.74rem', color: '#8A7669', fontWeight: 600 }}>
                     ({product.reviewsCount})
                   </span>
                 </div>
 
-                {/* Size / Weight Selector */}
-                {sizes.length > 1 && (
-                  <div style={{ marginBottom: '14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#736257' }}>
-                        Pack Size:
-                      </span>
-                      <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#D9822B' }}>
-                        {activeSize.weight}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      {sizes.map((s) => {
-                        const isSizeActive = s.weight === currentWeight;
-                        return (
-                          <button
-                            key={s.weight}
-                            type="button"
-                            onClick={() => handleSizeSelect(product.id, s.weight)}
-                            style={{
-                              flex: 1,
-                              padding: '6px 10px',
-                              borderRadius: '8px',
-                              border: isSizeActive ? '1.5px solid #20100A' : '1px solid #ECE2D5',
-                              background: isSizeActive ? '#20100A' : '#FAF6F0',
-                              color: isSizeActive ? '#FFFFFF' : '#5C4A3E',
-                              fontWeight: isSizeActive ? 800 : 600,
-                              fontSize: '0.8rem',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '4px',
-                              transition: 'all 0.15s ease'
-                            }}
-                          >
-                            <span>{s.weight}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                {/* Size / Weight Selector (Sleek Natural Chips) */}
+                <div style={{ marginBottom: '14px', minHeight: '52px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#8A7669', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      Pack Size:
+                    </span>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#B55A00' }}>
+                      {activeSize.weight} selected
+                    </span>
                   </div>
-                )}
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {sizes.map((s) => {
+                      const isSizeActive = s.weight === currentWeight;
+                      return (
+                        <button
+                          key={s.weight}
+                          type="button"
+                          onClick={() => handleSizeSelect(product.id, s.weight)}
+                          style={{
+                            padding: '6px 14px',
+                            borderRadius: '9999px',
+                            border: isSizeActive ? '1.5px solid #20100A' : '1px solid #E8DDD0',
+                            background: isSizeActive ? '#20100A' : '#FAF6F0',
+                            color: isSizeActive ? '#FFFFFF' : '#5C4A3E',
+                            fontWeight: isSizeActive ? 800 : 600,
+                            fontSize: '0.8rem',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                            boxShadow: isSizeActive ? '0 2px 8px rgba(32, 16, 10, 0.16)' : 'none',
+                            transition: 'all 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSizeActive) {
+                              e.currentTarget.style.borderColor = '#D9822B';
+                              e.currentTarget.style.background = '#F3ECE2';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSizeActive) {
+                              e.currentTarget.style.borderColor = '#E8DDD0';
+                              e.currentTarget.style.background = '#FAF6F0';
+                            }
+                          }}
+                        >
+                          <span>{s.weight}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
                 {/* Price, Quantity Stepper & Add to Cart Action */}
                 <div 
@@ -414,7 +423,19 @@ export default function ProductSection({ initialProducts }: ProductSectionProps)
                         )}
                       </div>
                       {discountPercent > 0 && (
-                        <span style={{ fontSize: '0.7rem', color: '#166534', fontWeight: 800 }}>
+                        <span 
+                          style={{ 
+                            fontSize: '0.68rem', 
+                            color: '#047857', 
+                            fontWeight: 800,
+                            background: '#ECFDF5',
+                            border: '1px solid #A7F3D0',
+                            padding: '1px 7px',
+                            borderRadius: '9999px',
+                            display: 'inline-block',
+                            marginTop: '3px'
+                          }}
+                        >
                           Save {discountPercent}%
                         </span>
                       )}

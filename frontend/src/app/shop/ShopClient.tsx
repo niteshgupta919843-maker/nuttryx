@@ -572,12 +572,18 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
                   <h3 
                     style={{
                       fontFamily: 'var(--font-heading)',
-                      fontSize: '1.15rem',
+                      fontSize: '1.12rem',
                       fontWeight: 800,
                       color: '#20100A',
-                      lineHeight: 1.3,
-                      marginBottom: '4px'
+                      lineHeight: 1.35,
+                      marginBottom: '4px',
+                      minHeight: '2.8rem',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
                     }}
+                    title={product.name}
                   >
                     {product.name}
                   </h3>
@@ -586,7 +592,12 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
                       fontSize: '0.82rem',
                       color: '#736257',
                       lineHeight: 1.4,
-                      marginBottom: '12px'
+                      marginBottom: '10px',
+                      minHeight: '2.3rem',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
                     }}
                   >
                     {product.subtitle}
@@ -599,14 +610,17 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
                         <Star key={i} size={13} fill="#D9822B" />
                       ))}
                     </div>
-                    <span style={{ fontSize: '0.78rem', color: '#736257', fontWeight: 600 }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#20100A' }}>
+                      {product.rating || '4.9'}
+                    </span>
+                    <span style={{ fontSize: '0.74rem', color: '#8A7669', fontWeight: 600 }}>
                       ({product.reviewsCount || 850})
                     </span>
                   </div>
 
                   {/* Size Selector */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ marginBottom: '16px', minHeight: '48px' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                       {sizes.map((s) => {
                         const isSizeActive = s.weight === currentWeight;
                         return (
@@ -614,25 +628,24 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
                             key={s.weight}
                             onClick={() => handleSizeSelect(product.id, s.weight)}
                             style={{
-                              flex: 1,
-                              padding: '6px 10px',
-                              borderRadius: '6px',
-                              border: isSizeActive ? '1.5px solid #20100A' : '1px solid #E2D7CB',
-                              background: isSizeActive ? '#FBF9F6' : '#FFFFFF',
-                              color: isSizeActive ? '#20100A' : '#736257',
+                              padding: '6px 14px',
+                              borderRadius: '9999px',
+                              border: isSizeActive ? '1.5px solid #20100A' : '1px solid #E8DDD0',
+                              background: isSizeActive ? '#20100A' : '#FAF6F0',
+                              color: isSizeActive ? '#FFFFFF' : '#5C4A3E',
                               fontWeight: isSizeActive ? 800 : 600,
-                              fontSize: '0.82rem',
+                              fontSize: '0.8rem',
                               fontFamily: 'var(--font-heading)',
                               cursor: 'pointer',
-                              display: 'flex',
+                              display: 'inline-flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               gap: '4px',
+                              boxShadow: isSizeActive ? '0 2px 8px rgba(32, 16, 10, 0.16)' : 'none',
                               transition: 'all 0.15s ease'
                             }}
                           >
                             <span>{s.weight}</span>
-                            {isSizeActive && <Check size={12} color="#D9822B" />}
                           </button>
                         );
                       })}
