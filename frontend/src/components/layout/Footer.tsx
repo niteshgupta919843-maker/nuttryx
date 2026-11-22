@@ -322,7 +322,7 @@ export default function Footer({
             </div>
 
             <p style={{ fontSize: '0.86rem', lineHeight: 1.6, color: '#A89689', marginBottom: '16px' }}>
-              Crafted in small batches from 100% slow-roasted Saurashtra bold peanuts. 
+              Crafted in small batches from 100% roasted  bold peanuts. 
               Zero hydrogenated palm oil, zero added refined sugars, pure plant protein.
             </p>
 
